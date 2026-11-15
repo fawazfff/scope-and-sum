@@ -39,14 +39,15 @@ function Landing({onEnter,onHelp}){
     <p className="ss-preview-total">$1,850</p>
     <div className="ss-preview-person"><span className="ss-preview-avatar blue"><FileText size={14}/></span><div><b>Brand identity</b><small>Direction and logo suite</small></div><strong>$1,200</strong></div>
     <div className="ss-preview-person"><span className="ss-preview-avatar gold"><ClipboardCheck size={14}/></span><div><b>Social launch templates</b><small>Six editable templates</small></div><strong>$400</strong></div>
-    <div className="ss-preview-person"><span className="ss-preview-avatar purple"><Store size={14}/></span><div><b>Packaging artwork</b><small>Product packaging design</small></div><strong>$1,850</strong></div>
+    <div className="ss-preview-person"><span className="ss-preview-avatar purple"><Store size={14}/></span><div><b>Packaging artwork</b><small>Product packaging design</small></div><strong>$250</strong></div>
     <div className="ss-preview-result"><span>Catalogue prices verified</span><b>Ready for review</b></div>
    </div>
   </section>
   <section className="ss-home-steps" id="ss-how">
-   <article><span>01</span><h2>Start with the request.</h2><p>Paste the customer's message or write the quotation yourself, line by line.</p></article>
-   <article><span>02</span><h2>Let SERV shape the scope.</h2><p>It turns the brief into a structured draft using your business catalogue.</p></article>
-   <article><span>03</span><h2>Review before you send.</h2><p>Reppo checks the draft. You make the final edits and approve the document.</p></article>
+   <article><span>01</span><h2>Set up your business.</h2><p>Add your business details, services, rates and payment terms first.</p></article>
+   <article><span>02</span><h2>Define the customer's scope.</h2><p>Share the request and let SERV draft a quotation from your approved catalogue.</p></article>
+   <article><span>03</span><h2>Get a Reppo review.</h2><p>Check the draft for unclear scope, missing details and pricing inconsistencies.</p></article>
+   <article><span>04</span><h2>Export your quotation.</h2><p>Make your final edits, then print or save the document as a PDF.</p></article>
   </section>
   <section className="ss-home-agent-proof" id="ss-business">
    <div><p className="ss-eyebrow">YOUR BUSINESS, CLEARLY PRESENTED</p><h2>Show what you offer.<br/>Quote with confidence.</h2><p>Your service catalogue is more than a price list. It is the reference for the work you do, what each service includes, and what you charge. Keep it current and use it to build consistent quotations.</p><button className="ss-inline-link" onClick={onEnter}>Set up your business catalogue <ArrowRight size={15}/></button></div>

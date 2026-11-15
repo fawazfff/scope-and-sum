@@ -1,6 +1,6 @@
 import React from "react";
 import { useMemo, useState } from "react";
-import { ArrowUpRight, ArrowRight, Plus, Trash2, FileText, ShieldCheck, Sparkles, CheckCircle2, AlertTriangle, LoaderCircle, Printer, RotateCcw, Building2, Store, BookOpen, HelpCircle, ChevronDown, ClipboardCheck, MessageCircle } from "lucide-react";
+import { ArrowUpRight, ArrowRight, Menu, X, Plus, Trash2, FileText, ShieldCheck, Sparkles, CheckCircle2, AlertTriangle, LoaderCircle, Printer, RotateCcw, Building2, Store, BookOpen, HelpCircle, ChevronDown, ClipboardCheck, MessageCircle } from "lucide-react";
 
 const initialProfile = { name: "Fieldnote Studio", email: "hello@fieldnote.studio", phone: "+234 801 234 5678", address: "Lagos, Nigeria", currency: "NGN", taxRate: 0, terms: "50% deposit to begin. Remaining balance due on delivery. This quotation is valid for 14 days." };
 const sampleCatalogue = [
@@ -14,14 +14,53 @@ const plus14 = new Date(Date.now()+14*86400000).toISOString().slice(0,10);
 
 
 function Landing({onEnter,onHelp}){
- return <div className="ss-site"><header className="ss-site-nav"><a className="ss-brand" href="#"><span className="ss-mark">S<span>.</span></span><span>scope<span>&</span>sum</span></a><nav><a href="#how">How it works</a><a href="#business">For businesses</a><button onClick={onHelp}>Help & FAQ</button></nav><button className="ss-primary" onClick={onEnter}>Open workspace <ArrowRight size={15}/></button></header>
- <main className="ss-site-main"><section className="ss-site-hero"><div><div className="ss-kicker">QUOTATIONS THAT ADD UP</div><h1>Good work deserves<br/><em>a clear price.</em></h1><p>Turn a customer's request into a thoughtful quotation. SERV helps shape the scope, your catalogue keeps prices honest, and Reppo gives the draft another look.</p><div className="ss-hero-actions"><button className="ss-primary ss-large" onClick={onEnter}>Create a quotation <ArrowRight size={16}/></button><a href="#how" className="ss-text-link">See how it works <ArrowUpRight size={15}/></a></div><div className="ss-hero-proof"><span><CheckCircle2 size={14}/> You control the prices</span><span><CheckCircle2 size={14}/> You approve before sending</span></div></div>
- <div className="ss-hero-art"><div className="ss-art-label">A CUSTOMER BRIEF</div><blockquote>“We need a new identity, launch materials and packaging for our product.”</blockquote><div className="ss-art-step"><span><Sparkles size={17}/></span><div><b>SERV Reasoning</b><small>Shapes the request into a scope</small></div><CheckCircle2 size={16}/></div><div className="ss-art-step"><span className="peach"><ClipboardCheck size={17}/></span><div><b>Your service catalogue</b><small>Applies your approved prices</small></div><CheckCircle2 size={16}/></div><div className="ss-art-step"><span className="sage"><ShieldCheck size={17}/></span><div><b>Reppo review</b><small>Checks the quotation independently</small></div><small className="ss-review-tag">REVIEW</small></div><div className="ss-art-caption">A clearer process, from first brief to final document.</div></div></section>
- <section className="ss-site-trust"><span>MADE FOR SERVICE BUSINESSES</span><div><b>Creative studios</b><i/><b>Consultants</b><i/><b>Freelancers</b><i/><b>Small teams</b></div></section>
- <section className="ss-site-section" id="how"><div className="ss-kicker">HOW IT WORKS</div><h2>From “how much?”<br/><em>to a clear proposal.</em></h2><p className="ss-section-lead">Each part has one job. You stay in control of the final quotation.</p><div className="ss-how-grid"><article><span>01</span><MessageCircle/><h3>Start with the request</h3><p>Paste what the customer asked for, or write the quotation yourself, line by line.</p></article><article><span>02</span><Sparkles/><h3>SERV shapes the scope</h3><p>SERV turns the brief into a structured draft using your business details and catalogue.</p></article><article><span>03</span><ShieldCheck/><h3>Reppo reviews the draft</h3><p>Send it for an independent assessment of clarity, completeness and consistency.</p></article><article><span>04</span><FileText/><h3>You approve and export</h3><p>Make final edits, check the document preview, then print or save it as a PDF.</p></article></div></section>
- <section className="ss-site-feature" id="business"><div><div className="ss-kicker">YOUR BUSINESS, IN ONE PLACE</div><h2>Show what you offer<br/><em>before you quote.</em></h2><p>Keep your business details, services, descriptions and rates together. Use your catalogue as a service menu when preparing a customer's quotation.</p><button className="ss-primary" onClick={onEnter}>Set up your business <ArrowRight size={15}/></button></div><div className="ss-feature-card"><div className="ss-feature-head">YOUR SERVICE MENU <span>CATALOGUE PREVIEW</span></div>{["Brand identity · Direction and logo suite","Content & launch · Social templates and assets","Consulting · Discovery and advisory"].map(x=><div className="ss-feature-row" key={x}><b>{x.split(" · ")[0]}</b><small>{x.split(" · ")[1]}</small><strong>YOUR RATE</strong></div>)}<div className="ss-feature-foot"><Store size={15}/> Your catalogue is the source of truth for prices.</div></div></section>
- <section className="ss-site-faq"><div><div className="ss-kicker">GOOD QUESTIONS</div><h2>New to Scope & Sum?</h2><p>We explain each part in plain language, including what the AI does and what stays in your hands.</p><button className="ss-text-link" onClick={onHelp}>Visit the help centre <ArrowRight size={15}/></button></div><div className="ss-faq-mini"><p><b>Does SERV choose my prices?</b><span>No. It can only use rates from your catalogue.</span></p><p><b>Does Reppo send the quotation?</b><span>No. Reppo reviews the draft. You decide what happens next.</span></p><p><b>Can I write a quote myself?</b><span>Yes. You can edit every field or start from scratch.</span></p></div></section>
- <section className="ss-site-bottom"><div className="ss-kicker">READY WHEN YOU ARE</div><h2>Make your next quote<br/><em>easier to stand behind.</em></h2><button className="ss-primary ss-large" onClick={onEnter}>Enter Scope & Sum <ArrowRight size={16}/></button></section></main><footer className="ss-site-footer"><span>Scope & Sum · Clear quotes, fewer surprises.</span><button onClick={onHelp}>Help & FAQ</button></footer></div>;
+ const [menuOpen,setMenuOpen]=useState(false);
+ return <div className="ss-site ss-splitmate">
+ <a className="ss-skip" href="#ss-main">Skip to content</a>
+ <header className="ss-split-nav">
+  <button className="ss-split-brand" onClick={onEnter}>scope<span>&</span>sum</button>
+  <nav aria-label="Primary navigation"><a href="#ss-main">Home</a><a href="#ss-how">How it works</a><a href="#ss-business">For businesses</a><button onClick={onHelp}>Help & FAQ</button></nav>
+  <button className="ss-primary" onClick={onEnter}>Open workspace <ArrowRight size={14}/></button>
+  <button className="ss-menu-toggle" aria-label={menuOpen?"Close menu":"Open menu"} aria-expanded={menuOpen} onClick={()=>setMenuOpen(v=>!v)}>{menuOpen?<X size={19}/>:<Menu size={19}/>}</button>
+  {menuOpen&&<nav className="ss-mobile-nav"><a href="#ss-main" onClick={()=>setMenuOpen(false)}>Home</a><a href="#ss-how" onClick={()=>setMenuOpen(false)}>How it works</a><a href="#ss-business" onClick={()=>setMenuOpen(false)}>For businesses</a><button onClick={()=>{setMenuOpen(false);onHelp()}}>Help & FAQ</button></nav>}
+ </header>
+ <main id="ss-main" className="ss-home-editorial">
+  <section className="ss-home-intro">
+   <div className="ss-home-intro-copy">
+    <p className="ss-eyebrow">FOR STUDIOS, CONSULTANTS, FREELANCERS AND TEAMS</p>
+    <h1>Good work,<br/>priced with <span>clarity.</span></h1>
+    <p>Turn a customer request into a quotation you can stand behind. Scope & Sum helps shape the work, keeps your prices grounded in your catalogue, and gives every draft a second review.</p>
+    <div className="ss-actions"><button className="ss-primary" onClick={onEnter}>Create a quotation <ArrowRight size={15}/></button><a className="ss-ghost-link" href="#ss-how">See how it works</a></div>
+    <div className="ss-product-note"><span>Price control stays with you</span><span>Review before sending</span><span>Export when ready</span></div>
+   </div>
+   <div className="ss-live-preview">
+    <div className="ss-preview-bar"><span>FIELDNOTE STUDIO · SAMPLE QUOTE</span><span>PREVIEW</span></div>
+    <div className="ss-preview-title"><div><b>Brand launch package</b><small>Prepared for a new customer</small></div><span>•••</span></div>
+    <p className="ss-preview-total">₦800,000</p>
+    <div className="ss-preview-person"><span className="ss-preview-avatar blue"><FileText size={14}/></span><div><b>Brand identity</b><small>Direction and logo suite</small></div><strong>₦480,000</strong></div>
+    <div className="ss-preview-person"><span className="ss-preview-avatar gold"><ClipboardCheck size={14}/></span><div><b>Social launch templates</b><small>Six editable templates</small></div><strong>₦160,000</strong></div>
+    <div className="ss-preview-person"><span className="ss-preview-avatar purple"><Store size={14}/></span><div><b>Packaging artwork</b><small>Product packaging design</small></div><strong>₦160,000</strong></div>
+    <div className="ss-preview-result"><span>Catalogue prices verified</span><b>Ready for review</b></div>
+   </div>
+  </section>
+  <section className="ss-home-steps" id="ss-how">
+   <article><span>01</span><h2>Start with the request.</h2><p>Paste the customer's message or write the quotation yourself, line by line.</p></article>
+   <article><span>02</span><h2>Let SERV shape the scope.</h2><p>It turns the brief into a structured draft using your business catalogue.</p></article>
+   <article><span>03</span><h2>Review before you send.</h2><p>Reppo checks the draft. You make the final edits and approve the document.</p></article>
+  </section>
+  <section className="ss-home-agent-proof" id="ss-business">
+   <div><p className="ss-eyebrow">YOUR BUSINESS, CLEARLY PRESENTED</p><h2>Show what you offer.<br/>Quote with confidence.</h2><p>Your service catalogue is more than a price list. It is the reference for the work you do, what each service includes, and what you charge. Keep it current and use it to build consistent quotations.</p><button className="ss-inline-link" onClick={onEnter}>Set up your business catalogue <ArrowRight size={15}/></button></div>
+   <div className="ss-agent-transcript">
+    <p><span>YOUR BUSINESS</span>Brand identity · ₦480,000</p>
+    <p><span>SERV REASONING</span>Matches the customer's request to your saved service and scope.</p>
+    <p className="ss-agent-review-row"><span>REPPO REVIEW</span><b>Checks scope clarity, missing details and pricing consistency.</b></p>
+    <button className="ss-inline-link" onClick={onHelp}>Learn how each part works <ArrowRight size={14}/></button>
+   </div>
+  </section>
+  <section className="ss-home-closing"><div><p className="ss-eyebrow">A BETTER WAY TO PREPARE A QUOTE</p><h2>Know what you're offering.<br/>Know what you're charging.</h2><p>Start with your business profile and catalogue. Your next quotation can begin with a customer brief or a blank page.</p></div><button className="ss-primary" onClick={onEnter}>Enter Scope & Sum <ArrowRight size={15}/></button></section>
+ </main>
+ <footer className="ss-split-footer"><div><b>scope<span>&</span>sum</b><small> · Clear quotations for service businesses</small></div><div><a href="#ss-how">How it works</a><button onClick={onHelp}>Help & FAQ</button><button onClick={onEnter}>Workspace</button></div></footer>
+ </div>;
 }
 function HelpCenter({onBack,onEnter}){
  const [open,setOpen]=useState(0),[search,setSearch]=useState("");

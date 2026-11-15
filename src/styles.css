@@ -495,3 +495,11 @@ button:focus-visible,
 .ss-site.ss-splitmate .ss-home-steps article{min-width:0}
 @media(max-width:900px){.ss-site.ss-splitmate .ss-home-steps{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:560px){.ss-site.ss-splitmate .ss-home-steps{grid-template-columns:1fr}}
+
+
+/* Quote service selector follows the same restrained field treatment. */
+.ss-line select{min-width:0;width:100%;border:0;background:transparent;padding:4px;color:#3e4b40;font:10px 'DM Sans';outline:none}
+.ss-line select:focus{background:#f3f6f0}
+.ss-line select option{background:#fffefa;color:#3e4b40}
+.ss-line input[readonly]{color:#526653;cursor:default}
+.ss-line input[readonly]:focus{background:transparent}

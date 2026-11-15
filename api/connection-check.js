@@ -16,7 +16,7 @@ export default async function handler(req,res){
       if(!r.ok)checks.serv.error=body.error?.message||body.message||"SERV rejected model discovery.";
       else if(checks.serv.availableModelIds.length){
         const model=process.env.SERV_REASONING_MODEL||models.find(x=>x.modelId==="claude-haiku-4.5")?.modelId||checks.serv.availableModelIds[0];
-        const completion=await fetch(SERV_BASE+"/chat/completions",{method:"POST",headers:{Authorization:"Bearer "+process.env.SERV_REASONING_API_KEY,"Content-Type":"application/json"},body:JSON.stringify({model,messages:[{role:"user",content:"Reply with exactly: connection successful"}],temperature:0,max_tokens:24})});
+        const completion=await fetch(SERV_BASE+"/chat/completions",{method:"POST",headers:{Authorization:"Bearer "+process.env.SERV_REASONING_API_KEY,"Content-Type":"application/json"},body:JSON.stringify({model,messages:[{role:"system",content:"You are a connectivity test assistant."},{role:"user",content:"Reply with exactly: connection successful"}],temperature:0,max_tokens:24})});
         const result=await completion.json().catch(()=>({}));
         checks.serv.completionHttpStatus=completion.status;
         checks.serv.completionSuccessful=completion.ok&&Boolean(result.choices?.[0]?.message?.content);
@@ -28,7 +28,7 @@ export default async function handler(req,res){
   }
   if(checks.reppo.configured){
     try{
-      const r=await fetch(REPPO_SUBMIT,{method:"POST",headers:{Authorization:"Bearer "+process.env.REPPO_API_KEY,"Content-Type":"application/json"},body:JSON.stringify({type:"answer",payload:"Connection test for Scope & Sum. Please assess whether this short test submission is coherent.",context:"This is a one-time live API connectivity test initiated by the application owner. It is not a customer quotation.",settlementMinutes:10})});
+      const r=await fetch(REPPO_SUBMIT,{method:"POST",headers:{Authorization:"Bearer "+process.env.REPPO_API_KEY,"Content-Type":"application/json"},body:JSON.stringify({type:"artifact",payload:"Scope & Sum live connectivity test. A quotation request was submitted for independent review. The business catalogue is the source of truth for available services and prices.",context:"This is a one-time live API connectivity test initiated by the application owner. Assess clarity and consistency only. This is not a customer quotation.",settlementMinutes:10})});
       const body=await r.json().catch(()=>({}));
       checks.reppo.submitHttpStatus=r.status;
       checks.reppo.authenticated=r.status!==401&&r.status!==403;

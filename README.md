@@ -15,6 +15,55 @@ Manual quoting takes time. AI-generated quotes introduce another risk: a model m
 
 Scope & Sum addresses this by grounding generated quotations in the business's own service catalogue and keeping the business owner responsible for the final review.
 
+## What SERV and Reppo do
+
+### 1. SERV Reasoning: Builds the quotation
+
+**Creates**
+
+SERV acts like an assistant for the business.
+
+It:
+
+- Reads the customer's request.
+- Understands what work the customer needs.
+- Matches the request to services in the business catalogue.
+- Organises the work into quotation line items.
+- Helps create a quotation draft.
+
+**Important:** SERV does not decide the prices. Scope & Sum checks the suggested services against the saved catalogue and uses the business's approved prices.
+
+### 2. Reppo: Independently reviews the quotation
+
+**Evaluates**
+
+Reppo acts like an independent judge.
+
+It:
+
+- Receives the original customer request.
+- Reviews the business rules and service catalogue.
+- Examines the generated quotation.
+- Checks for missing scope, unclear descriptions, pricing inconsistencies and unsupported assumptions.
+- Returns an independent evaluation.
+
+### How they work together
+
+1. **Customer request**  
+   What the customer wants.
+
+2. **SERV Reasoning**  
+   Understands the request and builds the quotation.
+
+3. **Scope & Sum price validation**  
+   Checks that services and prices follow the saved catalogue.
+
+4. **Reppo**  
+   Independently evaluates the quotation.
+
+5. **Reviewed quotation**  
+   The business owner checks the result and exports the PDF.
+
 ## How it works
 
 ### 1. Set up the business

@@ -36,17 +36,37 @@ function findItems(value,depth=0){
   }
   return [];
 }
+function catalogueKey(value){
+  return String(value||"").normalize("NFKC").toLowerCase().replace(/[^\\p{L}\\p{N}]+/gu," ").trim().replace(/\\s+/g," ");
+}
 function normalizeItems(quote,catalogue){
   const generated=findItems(quote);
   if(!generated.length)return [];
-  const allowed=new Map(catalogue.map(x=>[String(x.name||"").trim().toLowerCase(),Number(x.price)]));
+  const byName=new Map();
+  const byDescription=new Map();
+  for(const service of catalogue){
+    const name=String(service.name||"").trim();
+    const price=Number(service.price);
+    const nameKey=catalogueKey(name);
+    if(nameKey)byName.set(nameKey,{name,price,service});
+    const descriptionKey=catalogueKey(service.description);
+    if(descriptionKey){
+      const existing=byDescription.get(descriptionKey);
+      // Only accept a description as an alternate match when it identifies one catalogue service uniquely.
+      byDescription.set(descriptionKey,existing?null:{name,price,service});
+    }
+  }
   return generated.map(item=>{
     const nested=item.catalogueItem||item.catalogue_item||item.item||item;
-    const description=String(nested.description||nested.serviceName||nested.service_name||nested.service||nested.name||nested.title||nested.itemName||nested.item_name||nested.label||"").trim();
-    const key=description.toLowerCase();
-    if(!allowed.has(key))throw new Error("SERV suggested a service outside your approved catalogue: "+(description||"unnamed item")+". No quotation was created.");
+    const candidate=String(nested.serviceName||nested.service_name||nested.service||nested.name||nested.title||nested.itemName||nested.item_name||nested.label||nested.description||"").trim();
+    const key=catalogueKey(candidate);
+    // SERV may return the catalogue's scope description instead of its service name.
+    // Resolve that description to the canonical service name, while keeping the saved rate authoritative.
+    const matched=byName.get(key)||byDescription.get(key);
+    if(!matched)throw new Error("SERV suggested a service outside your approved catalogue: "+(candidate||"unnamed item")+". No quotation was created.");
     const quantity=Math.max(1,Math.min(1000,Number(nested.quantity??nested.qty)||1));
-    return {description,detail:String(nested.detail||nested.details||nested.scope||nested.descriptionOfWork||nested.description_of_work||""),quantity,price:allowed.get(key)};
+    const detail=String(nested.detail||nested.details||nested.scope||nested.descriptionOfWork||nested.description_of_work||"");
+    return {description:matched.name,detail:detail||String(matched.service.description||""),quantity,price:matched.price};
   });
 }
 async function complete(auth,model,messages){
@@ -89,7 +109,7 @@ export default async function handler(req,res){
 Rules:
 1. Select the relevant services from approvedBusinessCatalogue. If the request clearly asks for work covered by a catalogue service, you MUST include that service in items.
 2. At least one item is required whenever at least one catalogue service matches the request.
-3. The description must exactly equal a catalogue service name. Do not invent or rename services.
+3. Prefer the exact catalogue service name in "description". If you use a catalogue scope description instead, it must be copied exactly from that service's saved description. Do not invent or rename services.
 4. Never output prices. The application inserts and validates the approved USD prices.
 5. Do not return an empty items array when a relevant catalogue service exists.
 6. Work not covered by the catalogue goes in exclusions as "Needs manual scoping".

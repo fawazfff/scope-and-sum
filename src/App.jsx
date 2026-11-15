@@ -12,8 +12,8 @@ const today = new Date().toISOString().slice(0,10);
 const plus14 = new Date(Date.now()+14*86400000).toISOString().slice(0,10);
 
 function App() {
-  const [profile,setProfile] = useState(()=>{try{return {...initialProfile,...JSON.parse(localStorage.getItem("ss-profile")||"{}")}}catch{return initialProfile}});
-  const [catalogue,setCatalogue] = useState(()=>{try{return JSON.parse(localStorage.getItem("ss-catalogue"))||sampleCatalogue}catch{return sampleCatalogue}});
+  const [profile,setProfile] = useState(()=>{try{const saved=JSON.parse(localStorage.getItem("ss-profile")||"{}");const merged={...initialProfile,...(saved&&typeof saved==="object"&&!Array.isArray(saved)?saved:{})};for(const key of ["name","email","phone","address","currency","terms"])if(typeof merged[key]!=="string")merged[key]=initialProfile[key];if(!["NGN","USD","GBP"].includes(merged.currency))merged.currency="NGN";return merged;}catch{return {...initialProfile}}});
+  const [catalogue,setCatalogue] = useState(()=>{try{const saved=JSON.parse(localStorage.getItem("ss-catalogue")||"null");return Array.isArray(saved)?saved.filter(x=>x&&typeof x==="object").map((x,i)=>({id:x.id??i+1,name:typeof x.name==="string"?x.name:"",description:typeof x.description==="string"?x.description:"",price:Number.isFinite(Number(x.price))?Number(x.price):0})):sampleCatalogue;}catch{return sampleCatalogue}});
   const [customer,setCustomer] = useState({name:"Aster & Co.",email:"finance@asterand.co",address:"Victoria Island, Lagos"});
   const [request,setRequest] = useState("We need a new brand identity, six social media launch templates, and packaging artwork for two product variants. Please include a clear scope, delivery notes and a 50% deposit.");
   const [quote,setQuote] = useState({title:"Brand identity & launch",reference:"SS-2026-014",issuedAt:today,validUntil:plus14,notes:"Thank you for considering Fieldnote Studio.",items:[
@@ -61,7 +61,7 @@ function App() {
     finally{setEvalBusy(false);}
   };
   const checks=[
-    ["Business identity",Boolean(profile.name.trim()&&profile.email.trim())],
+    ["Business identity",Boolean(String(profile.name||"").trim()&&String(profile.email||"").trim())],
     ["Customer identified",Boolean(customer.name.trim())],
     ["Every item priced",quote.items.length>0&&quote.items.every(i=>i.description.trim()&&Number(i.quantity)>0&&Number(i.price)>=0)],
     ["Dates make sense",Boolean(quote.issuedAt&&quote.validUntil&&quote.validUntil>=quote.issuedAt)],

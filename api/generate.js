@@ -37,7 +37,7 @@ function findItems(value,depth=0){
   return [];
 }
 function catalogueKey(value){
-  return String(value||"").normalize("NFKC").toLowerCase().replace(/[^\\p{L}\\p{N}]+/gu," ").trim().replace(/\\s+/g," ");
+  return String(value||"").normalize("NFKC").toLowerCase().replace(/[^\p{L}\p{N}]+/gu," ").trim().replace(/\s+/g," ");
 }
 function normalizeItems(quote,catalogue){
   const generated=findItems(quote);

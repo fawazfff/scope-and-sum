@@ -60,7 +60,7 @@ function Landing({onEnter,onHelp}){
   </section>
   <section className="ss-home-closing"><div><p className="ss-eyebrow">A BETTER WAY TO PREPARE A QUOTE</p><h2>Know what you're offering.<br/>Know what you're charging.</h2><p>Start with your business profile and catalogue. Your next quotation can begin with a customer brief or a blank page.</p></div><button className="ss-primary" onClick={onEnter}>Enter Scope & Sum <ArrowRight size={15}/></button></section>
  </main>
- <footer className="ss-split-footer"><div><b>scope<span>&</span>sum</b><small> · Clear quotations for service businesses</small></div><div><a href="#ss-how">How it works</a><button onClick={onHelp}>Help & FAQ</button><button onClick={onEnter}>Workspace</button></div></footer>
+ <footer className="ss-split-footer"><div><b>scope<span>&</span>sum</b><small> · Clear quotations for service businesses</small></div><div><a href="#ss-how">How it works</a><button onClick={onHelp}>Help & FAQ</button><button onClick={onEnter}>Workspace</button><a href="https://github.com/fawazfff/scope-and-sum" target="_blank" rel="noreferrer">GitHub</a><a href="https://x.com/fawaztechyt_/status/2122084210580320681" target="_blank" rel="noreferrer">5-minute demo</a></div></footer>
  </div>;
 }
 function HelpCenter({onBack,onEnter}){

@@ -1,3 +1,4 @@
+import React from "react";
 import { useMemo, useState } from "react";
 import { ArrowUpRight, Plus, Trash2, FileText, ShieldCheck, Sparkles, CheckCircle2, AlertTriangle, LoaderCircle, Printer, RotateCcw, Building2 } from "lucide-react";
 

@@ -84,12 +84,12 @@ function App() {
     {id:3,description:"Packaging artwork",detail:"Print-ready packaging layouts",quantity:2,price:125}
   ]});
   const [page,setPage] = useState("home");
-  const [tab,setTab] = useState("profile");
+  const [tab,setTab] = useState(()=>{try{return localStorage.getItem("ss-eval-id")?"review":"profile";}catch{return "profile";}});
   const [currencyNotice,setCurrencyNotice] = useState(()=>{try{const saved=JSON.parse(localStorage.getItem("ss-profile")||"null");return Boolean(saved?.currency&&saved.currency!=="USD");}catch{return false;}});
   const [busy,setBusy] = useState(false);
   const [error,setError] = useState("");
-  const [evalId,setEvalId] = useState("");
-  const [evalState,setEvalState] = useState(null);
+  const [evalId,setEvalId] = useState(()=>{try{return localStorage.getItem("ss-eval-id")||"";}catch{return "";}});
+  const [evalState,setEvalState] = useState(()=>{try{return JSON.parse(localStorage.getItem("ss-eval-state")||"null");}catch{return null;}});
   const [evalBusy,setEvalBusy] = useState(false);
   const [generationMeta,setGenerationMeta] = useState(null);
   const businessReady=Boolean(profile.name.trim()&&profile.email.trim()&&catalogue.length>0&&catalogue.every(x=>String(x.name||"").trim()&&Number.isFinite(Number(x.price))&&Number(x.price)>0));
@@ -127,6 +127,12 @@ function App() {
     catch(e){setError(e.message||"Could not refresh the evaluation.");}
     finally{setEvalBusy(false);}
   };
+  useEffect(()=>{
+    try{
+      if(evalId){localStorage.setItem("ss-eval-id",evalId);if(evalState)localStorage.setItem("ss-eval-state",JSON.stringify(evalState));}
+      else{localStorage.removeItem("ss-eval-id");localStorage.removeItem("ss-eval-state");}
+    }catch(e){console.warn("Could not save Reppo evaluation state:",e.message);}
+  },[evalId,evalState]);
   useEffect(()=>{
     if(!evalId)return;
     const status=String(evalState?.status||"").toUpperCase();

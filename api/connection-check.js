@@ -11,11 +11,11 @@ export default async function handler(req,res){
       checks.serv.authenticated=r.ok;
       checks.serv.responseKeys=Object.keys(body||{});
       checks.serv.responsePreview=JSON.stringify(body).slice(0,1800);
-      const models=Array.isArray(body.data)?body.data:Array.isArray(body.models)?body.models:Array.isArray(body.items)?body.items:Array.isArray(body.data?.models)?body.data.models:[];
-      checks.serv.availableModelIds=models.map(x=>x.id||x.name).filter(Boolean).slice(0,8);
+      const models=Array.isArray(body.items)?body.items:Array.isArray(body.data)?body.data:Array.isArray(body.models)?body.models:[];
+      checks.serv.availableModelIds=models.map(x=>x.modelId||x.id||x.name).filter(Boolean).slice(0,8);
       if(!r.ok)checks.serv.error=body.error?.message||body.message||"SERV rejected model discovery.";
       else if(checks.serv.availableModelIds.length){
-        const model=process.env.SERV_REASONING_MODEL||checks.serv.availableModelIds[0];
+        const model=process.env.SERV_REASONING_MODEL||models.find(x=>x.modelId==="claude-haiku-4.5")?.modelId||checks.serv.availableModelIds[0];
         const completion=await fetch(SERV_BASE+"/chat/completions",{method:"POST",headers:{Authorization:"Bearer "+process.env.SERV_REASONING_API_KEY,"Content-Type":"application/json"},body:JSON.stringify({model,messages:[{role:"user",content:"Reply with exactly: connection successful"}],temperature:0,max_tokens:24})});
         const result=await completion.json().catch(()=>({}));
         checks.serv.completionHttpStatus=completion.status;

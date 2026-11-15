@@ -1,5 +1,5 @@
 import React from "react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ArrowUpRight, ArrowRight, Menu, X, Plus, Trash2, FileText, ShieldCheck, Sparkles, CheckCircle2, AlertTriangle, LoaderCircle, Printer, RotateCcw, Building2, Store, BookOpen, HelpCircle, ChevronDown, ClipboardCheck, MessageCircle } from "lucide-react";
 
 const initialProfile = { name: "Fieldnote Studio", email: "hello@fieldnote.studio", phone: "+1 (212) 555-0148", address: "New York, USA", currency: "USD", taxRate: 0, terms: "50% deposit to begin. Remaining balance due on delivery. This quotation is valid for 14 days." };
@@ -127,6 +127,25 @@ function App() {
     catch(e){setError(e.message||"Could not refresh the evaluation.");}
     finally{setEvalBusy(false);}
   };
+  useEffect(()=>{
+    if(!evalId)return;
+    const status=String(evalState?.status||"").toUpperCase();
+    if(["COMPLETED","FAILED","REJECTED","CANCELLED","ERROR"].includes(status))return;
+    let active=true;
+    const poll=async()=>{
+      try{
+        const res=await fetch("/api/evaluations?id="+encodeURIComponent(evalId));
+        const data=await res.json();
+        if(!res.ok)throw new Error(data.error||"Could not retrieve evaluation.");
+        if(active)setEvalState(data);
+      }catch(e){
+        if(active)console.warn("Reppo status refresh failed:",e.message);
+      }
+    };
+    poll();
+    const timer=setInterval(poll,10000);
+    return ()=>{active=false;clearInterval(timer);};
+  },[evalId,evalState?.status]);
   const checks=[
     ["Business identity",Boolean(String(profile.name||"").trim()&&String(profile.email||"").trim())],
     ["Customer identified",Boolean(customer.name.trim())],
@@ -193,7 +212,7 @@ function App() {
         </div>}
         {tab==="review"&&<div className="ss-panel"><div className="ss-panel-head"><span className="ss-icon"><ShieldCheck size={18}/></span><div><h2>Independent quotation review</h2><p>Reppo's independent judges review the output against your brief and business rules.</p></div></div>
           {!evalId?<div className="ss-empty"><ShieldCheck size={28}/><h3>Ready for independent review</h3><p>Your quotation and request will be sent to Reppo for an independent assessment. Reppo submissions are public, so remove confidential details before submitting.</p><button className="ss-primary" disabled={!ready||evalBusy} onClick={review}>{evalBusy?<><LoaderCircle className="ss-spin" size={15}/> Submitting to Reppo...</>:<>Submit quotation to Reppo <ShieldCheck size={15}/></>}</button><button className="ss-text-link" onClick={()=>setTab("quote")}>Back to scope and quotation</button></div>:<><div className="ss-eval-id"><span>REPP0 EVALUATION ID</span><strong>{evalId}</strong><button className="ss-small-button" onClick={refreshReview} disabled={evalBusy}>{evalBusy?<LoaderCircle className="ss-spin" size={14}/>:<RotateCcw size={14}/>} Refresh verdict</button></div>
-            <div className="ss-status"><span className="ss-status-dot"/><div><strong>{evalState?.status||"Submitted"}</strong><p>{evalState?.message||"The evaluation has been submitted. Independent judges need time to assess it."}</p></div></div>
+            <div className="ss-status"><span className="ss-status-dot"/><div><strong>{evalState?.status||"Submitted"}</strong><p>{evalState?.message||"The evaluation has been submitted. Independent judges need time to assess it."}</p><small>{["COMPLETED","FAILED","REJECTED","CANCELLED","ERROR"].includes(String(evalState?.status||"").toUpperCase())?"Evaluation status is final.":"Checking Reppo automatically every 10 seconds. Independent judging can take around 10 minutes."}</small></div></div>
             {evalState?.verdict&&<div className="ss-verdict"><div className="ss-score"><strong>{evalState.verdict.score??"—"}</strong><span>/ 100</span></div><div><span className="ss-kicker">REPP0 VERDICT · {evalState.verdict.decision||"PENDING"}</span><h3>{evalState.verdict.decision==="accept"?"Ready for your final approval":evalState.verdict.decision==="reject"?"Do not send this quotation":"Review the suggested changes"}</h3><p>Confidence: {evalState.verdict.confidence||"Not provided"} · Route: {evalState.action?.route||"Not provided"}</p></div></div>}
             {(evalState?.verdicts||[]).map((v,i)=><div className="ss-critique" key={i}><div><strong>{v.dimension||v.name||"Evaluation dimension"}</strong><span>{v.score??"—"}</span></div><p>{v.critique||v.feedback||v.reason||""}</p></div>)}
             {evalState?.error&&<div className="ss-error">{evalState.error}</div>}

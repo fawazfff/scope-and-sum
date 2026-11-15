@@ -20,7 +20,7 @@ export default async function handler(req,res){
       const payload={type:"artifact",payload:JSON.stringify(verifiedQuote),context:JSON.stringify(context),settlementMinutes:10};
       const upstream=await fetch(BASE+"/submit",{method:"POST",headers:{Authorization:"Bearer "+process.env.REPPO_API_KEY,"Content-Type":"application/json"},body:JSON.stringify(payload)});
       const data=await upstream.json();
-      if(!upstream.ok)return res.status(upstream.status).json({error:data.message||data.error||"Reppo rejected the evaluation request.",details:data});
+      if(!upstream.ok)return res.status(upstream.status).json({error:upstream.status===404?"Reppo returned 404 for the submission endpoint. Confirm the API key is active and enabled for the Evaluation API.":data.message||data.error||"Reppo rejected the evaluation request."});
       const id=data.evalId||data.id||data.evaluationId||data.requestId||data.data?.evalId||data.data?.id;
       if(!id)return res.status(502).json({error:"Reppo accepted the request but did not return a recognizable evaluation ID.",response:data});
       return res.status(200).json({evalId:String(id),status:data.status||"submitted"});

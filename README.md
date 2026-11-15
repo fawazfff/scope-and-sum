@@ -4,8 +4,20 @@
 
 Scope & Sum helps service businesses turn a customer's request into a structured, itemised quotation. It uses **OpenServ SERV Reasoning** to analyse the brief and draft the quote, then uses **Reppo** for an independent evaluation before the business exports the final document.
 
-**Live demo:** https://scope-and-sum.vercel.app  
-**Repository:** https://github.com/fawazfff/scope-and-sum
+**Live website:** https://scope-and-sum.vercel.app  
+**5-minute demo video:** https://x.com/fawaztechyt_/status/2122084210580320681  
+**Source code:** https://github.com/fawazfff/scope-and-sum  
+**Built for:** OpenServ SERV Hackathon 02 · Reppo track
+
+## Start here
+
+Want to understand the project quickly?
+
+1. **[Open the live website](https://scope-and-sum.vercel.app)** to explore the landing page and quotation workspace. No local setup is needed.
+2. **[Watch the 5-minute demo](https://x.com/fawaztechyt_/status/2122084210580320681)** to see the workflow in action, including SERV quotation generation and Reppo evaluation.
+3. **Read the sections below** for the problem, product flow, implementation details and setup instructions.
+
+The live workspace uses browser local storage for the business profile and catalogue. The AI generation and evaluation features call server-side Vercel API routes, so the deployed website is the easiest way to explore the product.
 
 ## The problem
 
@@ -190,6 +202,13 @@ The AI features require the environment variables above to be configured in the 
 - PDF output uses the browser's print dialog. Choose **Save as PDF**.
 - Reppo evaluation duration depends on Reppo's evaluator process and queue.
 - AI-generated content must be checked by the business owner before it is sent to a customer.
+
+## Project links
+
+- **Live website:** https://scope-and-sum.vercel.app
+- **Demo video on X:** https://x.com/fawaztechyt_/status/2122084210580320681
+- **GitHub repository:** https://github.com/fawazfff/scope-and-sum
+- **Builder:** [@fawaztechyt_](https://x.com/fawaztechyt_)
 
 ## Hackathon
 

@@ -84,11 +84,11 @@ function App() {
     {id:3,description:"Packaging artwork",detail:"Print-ready packaging layouts",quantity:2,price:125}
   ]});
   const [page,setPage] = useState("home");
-  const [tab,setTab] = useState(()=>{try{return localStorage.getItem("ss-eval-id")?"review":"profile";}catch{return "profile";}});
+  const [tab,setTab] = useState(()=>{try{return localStorage.getItem("ss-eval-id")||new URLSearchParams(window.location.search).get("evalId")?"review":"profile";}catch{return "profile";}});
   const [currencyNotice,setCurrencyNotice] = useState(()=>{try{const saved=JSON.parse(localStorage.getItem("ss-profile")||"null");return Boolean(saved?.currency&&saved.currency!=="USD");}catch{return false;}});
   const [busy,setBusy] = useState(false);
   const [error,setError] = useState("");
-  const [evalId,setEvalId] = useState(()=>{try{return localStorage.getItem("ss-eval-id")||"";}catch{return "";}});
+  const [evalId,setEvalId] = useState(()=>{try{return localStorage.getItem("ss-eval-id")||new URLSearchParams(window.location.search).get("evalId")||"";}catch{return "";}});
   const [evalState,setEvalState] = useState(()=>{try{return JSON.parse(localStorage.getItem("ss-eval-state")||"null");}catch{return null;}});
   const [evalBusy,setEvalBusy] = useState(false);
   const [generationMeta,setGenerationMeta] = useState(null);

@@ -10,8 +10,8 @@ export default async function handler(req,res){
     const modelsRes=await fetch(SERV_BASE+"/models",{headers:auth});
     if(!modelsRes.ok)throw new Error("SERV model discovery failed ("+modelsRes.status+"). Check the SERV API key and account access.");
     const modelsData=await modelsRes.json();
-    const models=Array.isArray(modelsData.data)?modelsData.data:[];
-    const model=(process.env.SERV_REASONING_MODEL||models[0]?.id);
+    const models=Array.isArray(modelsData.items)?modelsData.items:Array.isArray(modelsData.data)?modelsData.data:Array.isArray(modelsData.models)?modelsData.models:[];
+    const model=(process.env.SERV_REASONING_MODEL||models.find(x=>x.modelId==="claude-haiku-4.5")?.modelId||models[0]?.modelId||models[0]?.id);
     if(!model)throw new Error("SERV did not return an available model.");
     const system=`You are the quotation specialist for a real business. Produce a clear, accurate quotation draft as JSON only. You MUST only select services present in the supplied catalogue. Never invent services, prices, discounts, taxes, delivery dates, guarantees or terms. Use exact catalogue unit prices. If the request asks for something not in the catalogue, do not price it; list it in exclusions as "Needs manual scoping". Quantity may be inferred only when explicitly clear from the customer request. Otherwise use 1 and explain the assumption in notes. Keep descriptions concise and specific. Currency is USD. Return this exact JSON shape: {"title":"...","notes":"...","items":[{"description":"exact catalogue service name","detail":"scope detail","quantity":1,"price":0}],"exclusions":["..."],"assumptions":["..."]}. No markdown fences.`;
     const user={customer,request,approvedBusinessCatalogue:catalogue.map(x=>({name:x.name,description:x.description,unitPrice:Number(x.price)})),businessRules:{businessName:profile?.name,currency:"USD",taxRate:Number(profile?.taxRate)||0,paymentTerms:profile?.terms},existingDocument:quoteContext};

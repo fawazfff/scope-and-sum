@@ -21,7 +21,7 @@ function findItems(value,depth=0){
   if(!value||depth>5)return [];
   if(Array.isArray(value)){
     if(value.length && value.some(x=>x&&typeof x==="object"&&(
-      x.description||x.serviceName||x.service||x.name||x.catalogueItem||x.item
+      x.description||x.serviceName||x.service_name||x.service||x.name||x.title||x.catalogueItem||x.catalogue_item||x.item
     )))return value;
     for(const x of value){const found=findItems(x,depth+1);if(found.length)return found;}
     return [];
@@ -41,12 +41,12 @@ function normalizeItems(quote,catalogue){
   if(!generated.length)return [];
   const allowed=new Map(catalogue.map(x=>[String(x.name||"").trim().toLowerCase(),Number(x.price)]));
   return generated.map(item=>{
-    const nested=item.catalogueItem||item.item||item;
-    const description=String(nested.description||nested.serviceName||nested.service_name||nested.service||nested.name||nested.title||"").trim();
+    const nested=item.catalogueItem||item.catalogue_item||item.item||item;
+    const description=String(nested.description||nested.serviceName||nested.service_name||nested.service||nested.name||nested.title||nested.itemName||nested.item_name||nested.label||"").trim();
     const key=description.toLowerCase();
     if(!allowed.has(key))throw new Error("SERV suggested a service outside your approved catalogue: "+(description||"unnamed item")+". No quotation was created.");
     const quantity=Math.max(1,Math.min(1000,Number(nested.quantity??nested.qty)||1));
-    return {description,detail:String(nested.detail||nested.details||nested.scope||nested.descriptionOfWork||""),quantity,price:allowed.get(key)};
+    return {description,detail:String(nested.detail||nested.details||nested.scope||nested.descriptionOfWork||nested.description_of_work||""),quantity,price:allowed.get(key)};
   });
 }
 async function complete(auth,model,messages){

@@ -2,13 +2,13 @@ import React from "react";
 import { useMemo, useState } from "react";
 import { ArrowUpRight, ArrowRight, Menu, X, Plus, Trash2, FileText, ShieldCheck, Sparkles, CheckCircle2, AlertTriangle, LoaderCircle, Printer, RotateCcw, Building2, Store, BookOpen, HelpCircle, ChevronDown, ClipboardCheck, MessageCircle } from "lucide-react";
 
-const initialProfile = { name: "Fieldnote Studio", email: "hello@fieldnote.studio", phone: "+234 801 234 5678", address: "Lagos, Nigeria", currency: "NGN", taxRate: 0, terms: "50% deposit to begin. Remaining balance due on delivery. This quotation is valid for 14 days." };
+const initialProfile = { name: "Fieldnote Studio", email: "hello@fieldnote.studio", phone: "+1 (212) 555-0148", address: "New York, USA", currency: "USD", taxRate: 0, terms: "50% deposit to begin. Remaining balance due on delivery. This quotation is valid for 14 days." };
 const sampleCatalogue = [
-  { id: 1, name: "Brand identity direction", description: "Concept, visual direction and logo suite", price: 480000 },
-  { id: 2, name: "Social launch templates", description: "Six editable templates for social channels", price: 160000 },
-  { id: 3, name: "Packaging artwork", description: "Print-ready packaging layouts", price: 62500 }
+  { id: 1, name: "Brand identity direction", description: "Concept, visual direction and logo suite", price: 1200 },
+  { id: 2, name: "Social launch templates", description: "Six editable templates for social channels", price: 400 },
+  { id: 3, name: "Packaging artwork", description: "Print-ready packaging layouts", price: 125 }
 ];
-const fmt = (n, currency) => new Intl.NumberFormat("en-NG", { style: "currency", currency, maximumFractionDigits: 0 }).format(Number(n) || 0);
+const fmt = (n, currency) => new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 2 }).format(Number(n) || 0);
 const today = new Date().toISOString().slice(0,10);
 const plus14 = new Date(Date.now()+14*86400000).toISOString().slice(0,10);
 
@@ -36,10 +36,10 @@ function Landing({onEnter,onHelp}){
    <div className="ss-live-preview">
     <div className="ss-preview-bar"><span>FIELDNOTE STUDIO · SAMPLE QUOTE</span><span>PREVIEW</span></div>
     <div className="ss-preview-title"><div><b>Brand launch package</b><small>Prepared for a new customer</small></div><span>•••</span></div>
-    <p className="ss-preview-total">₦800,000</p>
-    <div className="ss-preview-person"><span className="ss-preview-avatar blue"><FileText size={14}/></span><div><b>Brand identity</b><small>Direction and logo suite</small></div><strong>₦480,000</strong></div>
-    <div className="ss-preview-person"><span className="ss-preview-avatar gold"><ClipboardCheck size={14}/></span><div><b>Social launch templates</b><small>Six editable templates</small></div><strong>₦160,000</strong></div>
-    <div className="ss-preview-person"><span className="ss-preview-avatar purple"><Store size={14}/></span><div><b>Packaging artwork</b><small>Product packaging design</small></div><strong>₦160,000</strong></div>
+    <p className="ss-preview-total">$1,850</p>
+    <div className="ss-preview-person"><span className="ss-preview-avatar blue"><FileText size={14}/></span><div><b>Brand identity</b><small>Direction and logo suite</small></div><strong>$1,200</strong></div>
+    <div className="ss-preview-person"><span className="ss-preview-avatar gold"><ClipboardCheck size={14}/></span><div><b>Social launch templates</b><small>Six editable templates</small></div><strong>$400</strong></div>
+    <div className="ss-preview-person"><span className="ss-preview-avatar purple"><Store size={14}/></span><div><b>Packaging artwork</b><small>Product packaging design</small></div><strong>$1,850</strong></div>
     <div className="ss-preview-result"><span>Catalogue prices verified</span><b>Ready for review</b></div>
    </div>
   </section>
@@ -51,7 +51,7 @@ function Landing({onEnter,onHelp}){
   <section className="ss-home-agent-proof" id="ss-business">
    <div><p className="ss-eyebrow">YOUR BUSINESS, CLEARLY PRESENTED</p><h2>Show what you offer.<br/>Quote with confidence.</h2><p>Your service catalogue is more than a price list. It is the reference for the work you do, what each service includes, and what you charge. Keep it current and use it to build consistent quotations.</p><button className="ss-inline-link" onClick={onEnter}>Set up your business catalogue <ArrowRight size={15}/></button></div>
    <div className="ss-agent-transcript">
-    <p><span>YOUR BUSINESS</span>Brand identity · ₦480,000</p>
+    <p><span>YOUR BUSINESS</span>Brand identity · $1,200</p>
     <p><span>SERV REASONING</span>Matches the customer's request to your saved service and scope.</p>
     <p className="ss-agent-review-row"><span>REPPO REVIEW</span><b>Checks scope clarity, missing details and pricing consistency.</b></p>
     <button className="ss-inline-link" onClick={onHelp}>Learn how each part works <ArrowRight size={14}/></button>
@@ -73,23 +73,27 @@ function Storefront({profile,catalogue,onEdit,onQuote}){
 }
 
 function App() {
-  const [profile,setProfile] = useState(()=>{try{const saved=JSON.parse(localStorage.getItem("ss-profile")||"{}");const merged={...initialProfile,...(saved&&typeof saved==="object"&&!Array.isArray(saved)?saved:{})};for(const key of ["name","email","phone","address","currency","terms"])if(typeof merged[key]!=="string")merged[key]=initialProfile[key];if(!["NGN","USD","GBP"].includes(merged.currency))merged.currency="NGN";return merged;}catch{return {...initialProfile}}});
+  const [profile,setProfile] = useState(()=>{try{const saved=JSON.parse(localStorage.getItem("ss-profile")||"{}");const merged={...initialProfile,...(saved&&typeof saved==="object"&&!Array.isArray(saved)?saved:{})};for(const key of ["name","email","phone","address","currency","terms"])if(typeof merged[key]!=="string")merged[key]=initialProfile[key];merged.currency="USD";return merged;}catch{return {...initialProfile}}});
   const [catalogue,setCatalogue] = useState(()=>{try{const saved=JSON.parse(localStorage.getItem("ss-catalogue")||"null");return Array.isArray(saved)?saved.filter(x=>x&&typeof x==="object").map((x,i)=>({id:x.id??i+1,name:typeof x.name==="string"?x.name:"",description:typeof x.description==="string"?x.description:"",price:Number.isFinite(Number(x.price))?Number(x.price):0})):sampleCatalogue;}catch{return sampleCatalogue}});
   const [customer,setCustomer] = useState({name:"Aster & Co.",email:"finance@asterand.co",address:"Victoria Island, Lagos"});
   const [request,setRequest] = useState("We need a new brand identity, six social media launch templates, and packaging artwork for two product variants. Please include a clear scope, delivery notes and a 50% deposit.");
   const [quote,setQuote] = useState({title:"Brand identity & launch",reference:"SS-2026-014",issuedAt:today,validUntil:plus14,notes:"Thank you for considering Fieldnote Studio.",items:[
-    {id:1,description:"Brand identity direction",detail:"Concept, visual direction and logo suite",quantity:1,price:480000},
-    {id:2,description:"Social launch templates",detail:"Six editable templates for social channels",quantity:1,price:160000},
-    {id:3,description:"Packaging artwork",detail:"Print-ready packaging layouts",quantity:2,price:62500}
+    {id:1,description:"Brand identity direction",detail:"Concept, visual direction and logo suite",quantity:1,price:1200},
+    {id:2,description:"Social launch templates",detail:"Six editable templates for social channels",quantity:1,price:400},
+    {id:3,description:"Packaging artwork",detail:"Print-ready packaging layouts",quantity:2,price:125}
   ]});
   const [page,setPage] = useState("home");
-  const [tab,setTab] = useState("quote");
+  const [tab,setTab] = useState("profile");
+  const [currencyNotice,setCurrencyNotice] = useState(()=>{try{const saved=JSON.parse(localStorage.getItem("ss-profile")||"null");return Boolean(saved?.currency&&saved.currency!=="USD");}catch{return false;}});
   const [busy,setBusy] = useState(false);
   const [error,setError] = useState("");
   const [evalId,setEvalId] = useState("");
   const [evalState,setEvalState] = useState(null);
   const [evalBusy,setEvalBusy] = useState(false);
   const [generationMeta,setGenerationMeta] = useState(null);
+  const businessReady=Boolean(profile.name.trim()&&profile.email.trim()&&catalogue.length>0&&catalogue.every(x=>String(x.name||"").trim()&&Number.isFinite(Number(x.price))&&Number(x.price)>0));
+  const stepIndex=tab==="profile"||tab==="storefront"?0:tab==="quote"?1:tab==="review"?2:3;
+  const stepTitle=["Your business","Customer scope","Independent review","Export quotation"][stepIndex];
   const subtotal = useMemo(()=>quote.items.reduce((s,i)=>s+Math.max(0,Number(i.quantity)||0)*Math.max(0,Number(i.price)||0),0),[quote.items]);
   const tax = subtotal*(Math.max(0,Number(profile.taxRate)||0)/100);
   const total = subtotal+tax;
@@ -129,24 +133,36 @@ function App() {
     ["Dates make sense",Boolean(quote.issuedAt&&quote.validUntil&&quote.validUntil>=quote.issuedAt)],
     ["Totals calculated",Number.isFinite(total)&&total>=0]
   ];
-  const ready=checks.every(c=>c[1]);
+  const ready=businessReady&&checks.every(c=>c[1]);
   const addCatalogue=()=>{const item={id:Date.now(),name:"New service",description:"",price:0};const next=[...catalogue,item];setCatalogue(next);localStorage.setItem("ss-catalogue",JSON.stringify(next));};
   const saveCatalogue=(id,k,v)=>setCatalogue(items=>{const next=items.map(i=>i.id===id?{...i,[k]:v}:i);localStorage.setItem("ss-catalogue",JSON.stringify(next));return next;});
+  const loadDemoData=()=>{
+    setProfile({...initialProfile});localStorage.setItem("ss-profile",JSON.stringify(initialProfile));
+    setCatalogue(sampleCatalogue.map(x=>({...x})));localStorage.setItem("ss-catalogue",JSON.stringify(sampleCatalogue));
+    setCustomer({name:"Aster & Co.",email:"finance@asterand.co",address:"New York, NY"});
+    setRequest("We need a new brand identity, six social media launch templates, and packaging artwork for two product variants. Please include a clear scope, delivery notes and a 50% deposit.");
+    setQuote({title:"Brand identity & launch",reference:"SS-2026-014",issuedAt:today,validUntil:plus14,notes:"Thank you for considering Fieldnote Studio. 50% deposit to begin; remaining balance due on delivery.",items:[
+      {id:1,description:"Brand identity direction",detail:"Concept, visual direction and logo suite",quantity:1,price:1200},
+      {id:2,description:"Social launch templates",detail:"Six editable templates for social channels",quantity:1,price:400},
+      {id:3,description:"Packaging artwork",detail:"Print-ready packaging layouts",quantity:2,price:125}
+    ]});
+    setEvalId("");setEvalState(null);setGenerationMeta(null);setCurrencyNotice(false);setError("");setTab("profile");
+  };
   return <>{page==="home"?<Landing onEnter={()=>setPage("workspace")} onHelp={()=>setPage("help")}/>:page==="help"?<HelpCenter onBack={()=>setPage("home")} onEnter={()=>setPage("workspace")}/>:<div className="ss-app ss-splitmate">
     <header className="ss-nav"><button className="ss-brand" onClick={()=>setPage("home")}><span className="ss-mark">S<span>.</span></span><span>scope<span>&</span>sum</span></button><div className="ss-nav-meta">WORKSPACE <i>/</i> {tab==="profile"?"Business setup":tab==="review"?"Independent review":tab==="storefront"?"Service menu":"New quotation"}</div><button className="ss-nav-button" onClick={()=>setPage("help")}><HelpCircle size={15}/> Help</button><button className="ss-nav-button" onClick={()=>setTab("profile")}><Building2 size={15}/> Business profile</button></header>
     <main className="ss-main">
-      <section className="ss-heading"><div><div className="ss-kicker">QUOTATIONS, WITH A SECOND SET OF EYES</div><h1>Make the work <em>clear.</em></h1><p>Turn a customer's request into a priced scope, then get an independent review before it leaves your desk.</p></div><div className="ss-heading-mark">01 <span>/</span> 03</div></section>
-      <div className="ss-layout"><section className="ss-work">
-        <div className="ss-tabs"><button className={tab==="quote"?"active":""} onClick={()=>setTab("quote")}>01 &nbsp; Quotation</button><button className={tab==="storefront"?"active":""} onClick={()=>setTab("storefront")}>02 &nbsp; Service menu</button><button className={tab==="review"?"active":""} onClick={()=>setTab("review")}>03 &nbsp; Reppo review</button><button className={tab==="profile"?"active":""} onClick={()=>setTab("profile")}>04 &nbsp; Business & rates</button></div>
+      <section className="ss-heading"><div><div className="ss-kicker">STEP 0{stepIndex+1} / 04 · {stepTitle.toUpperCase()}</div><h1>{stepIndex===0?<>Start with <em>your business.</em></>:stepIndex===1?<>Define the <em>scope.</em></>:stepIndex===2?<>Review before <em>you send.</em></>:<>Your quotation, <em>ready.</em></>}</h1><p>{stepIndex===0?"Tell us who is issuing this quotation and what your business offers. These details appear on the final document.":stepIndex===1?"Add the customer's request. SERV can turn it into a draft using only your saved services and USD rates.":stepIndex===2?"Submit the finished draft to Reppo for an independent review before exporting it.":"Check the final customer-facing document and save it as a PDF."}</p></div><div className="ss-heading-mark">0{stepIndex+1} <span>/</span> 04</div></section>
+      <div className={"ss-layout ss-layout-"+tab}><section className="ss-work">
+        <div className="ss-tabs ss-stepper"><button className={tab==="profile"||tab==="storefront"?"active":""} onClick={()=>setTab("profile")}>01 &nbsp; Business</button><button className={tab==="quote"?"active":""} disabled={!businessReady} onClick={()=>setTab("quote")}>02 &nbsp; Scope</button><button className={tab==="review"?"active":""} disabled={!ready} onClick={()=>setTab("review")}>03 &nbsp; Reppo review</button><button className={tab==="export"?"active":""} disabled={!evalId} onClick={()=>setTab("export")}>04 &nbsp; Export</button></div>
         {tab==="storefront"&&<Storefront profile={profile} catalogue={catalogue} onEdit={()=>setTab("profile")} onQuote={()=>setTab("quote")}/>}
-        {tab==="profile"&&<div className="ss-panel"><div className="ss-panel-head"><span className="ss-icon"><Building2 size={18}/></span><div><h2>Your business profile</h2><p>These details and rates are used when SERV drafts quotations.</p></div></div><div className="ss-form-grid">
+        {tab==="profile"&&<div className="ss-panel"><div className="ss-panel-head"><span className="ss-icon"><Building2 size={18}/></span><div><h2>Business profile</h2><p>First, set up the business that will issue this quotation. These details appear on the customer-facing document.</p></div><button className="ss-small-button" onClick={loadDemoData}>Load demo business</button></div><div className="ss-demo-note"><Sparkles size={15}/><span><strong>Sample business preloaded.</strong> Replace the example details and service prices with your own before sending a real quotation.</span></div>{currencyNotice&&<div className="ss-currency-note"><AlertTriangle size={15}/><span>Your saved profile used NGN. The workspace now quotes in USD. Review your saved catalogue prices and update them to your intended USD rates before continuing.</span><button onClick={()=>setCurrencyNotice(false)} aria-label="Dismiss currency notice"><X size={14}/></button></div>}<div className="ss-form-grid">
           {["name","email","phone","address"].map(k=><label className="ss-field" key={k}><span>{k==="name"?"BUSINESS NAME":k.toUpperCase()}</span><input value={profile[k]} onChange={e=>updateProfile(k,e.target.value)}/></label>)}
-          <label className="ss-field"><span>CURRENCY</span><select value={profile.currency} onChange={e=>updateProfile("currency",e.target.value)}><option value="NGN">NGN · Nigerian naira</option><option value="USD">USD · US dollar</option><option value="GBP">GBP · British pound</option></select></label>
+          <div className="ss-field"><span>QUOTATION CURRENCY</span><div className="ss-currency-lock"><strong>USD · US dollar</strong><small>All quotations are prepared in US dollars.</small></div></div>
           <label className="ss-field"><span>TAX RATE (%)</span><input type="number" min="0" max="100" value={profile.taxRate} onChange={e=>updateProfile("taxRate",e.target.value)}/></label>
           <label className="ss-field ss-full"><span>DEFAULT PAYMENT TERMS</span><textarea value={profile.terms} onChange={e=>updateProfile("terms",e.target.value)}/></label>
         </div><div className="ss-divider"/><div className="ss-panel-head"><span className="ss-icon warm"><FileText size={18}/></span><div><h2>Service catalogue</h2><p>Use your own prices. SERV can only quote services listed here.</p></div><button className="ss-small-button" onClick={addCatalogue}><Plus size={14}/> Add service</button></div>
           {catalogue.map(item=><div className="ss-catalogue-row" key={item.id}><input aria-label="Service name" value={item.name} onChange={e=>saveCatalogue(item.id,"name",e.target.value)}/><input aria-label="Service description" value={item.description} placeholder="Scope / what's included" onChange={e=>saveCatalogue(item.id,"description",e.target.value)}/><input aria-label="Service price" type="number" value={item.price} onChange={e=>saveCatalogue(item.id,"price",e.target.value)}/><button className="ss-icon-button" onClick={()=>{const n=catalogue.filter(x=>x.id!==item.id);setCatalogue(n);localStorage.setItem("ss-catalogue",JSON.stringify(n));}}><Trash2 size={14}/></button></div>)}
-          <p className="ss-hint">Your profile and catalogue are saved in this browser. They are not sent to Reppo.</p>
+          <div className="ss-business-actions"><p className="ss-hint">Your profile and catalogue are saved in this browser and are used by SERV and Reppo to understand your business and its pricing rules.</p><div><button className="ss-small-button" onClick={()=>setTab("storefront")}><Store size={14}/> Preview service menu</button><button className="ss-primary" disabled={!businessReady} onClick={()=>setTab("quote")}>Continue to customer scope <ArrowRight size={15}/></button></div></div>
         </div>}
         {tab==="quote"&&<div className="ss-panel">
           <div className="ss-panel-head"><span className="ss-icon"><Sparkles size={18}/></span><div><h2>Start with the customer's request</h2><p>SERV Reasoning turns this brief into a quotation using your catalogue.</p></div><span className="ss-powered">POWERED BY SERV</span></div>
@@ -156,7 +172,7 @@ function App() {
             <label className="ss-field"><span>CUSTOMER EMAIL</span><input value={customer.email} onChange={e=>setCustomer({...customer,email:e.target.value})}/></label>
             <label className="ss-field ss-full"><span>CUSTOMER ADDRESS</span><input value={customer.address} onChange={e=>setCustomer({...customer,address:e.target.value})}/></label>
           </div>
-          <div className="ss-action-row"><span className="ss-hint">SERV is restricted to your saved service catalogue and prices.</span><button className="ss-primary" disabled={busy||!request.trim()} onClick={generate}>{busy?<><LoaderCircle className="ss-spin" size={16}/> Drafting...</>:<>Generate quotation <ArrowUpRight size={16}/></>}</button></div>
+          <div className="ss-action-row"><span className="ss-hint">SERV can only use the services and USD rates in your business catalogue.</span><button className="ss-primary" disabled={busy||!request.trim()} onClick={generate}>{busy?<><LoaderCircle className="ss-spin" size={16}/> Drafting...</>:<>Generate quotation <ArrowUpRight size={16}/></>}</button></div>
           {error&&<div className="ss-error"><AlertTriangle size={16}/>{error}</div>}
           {generationMeta&&<div className="ss-success"><CheckCircle2 size={16}/> Draft generated with {generationMeta.model}. Review every line before sending.</div>}
           <div className="ss-divider"/>
@@ -172,19 +188,20 @@ function App() {
           <button className="ss-add-line" onClick={addItem}><Plus size={15}/> Add a line item</button>
           <label className="ss-field ss-notes"><span>NOTES & PAYMENT TERMS</span><textarea value={quote.notes} onChange={e=>setQuote({...quote,notes:e.target.value})}/></label>
           <div className="ss-total-line"><span>Subtotal</span><strong>{fmt(subtotal,profile.currency)}</strong></div><div className="ss-total-line"><span>Tax · {profile.taxRate}%</span><strong>{fmt(tax,profile.currency)}</strong></div><div className="ss-total-line ss-grand"><span>Total</span><strong>{fmt(total,profile.currency)}</strong></div>
-          <div className="ss-action-row"><span className={ready?"ss-hint":"ss-hint ss-warning"}>{checks.filter(c=>c[1]).length}/5 preflight checks passed</span><button className="ss-primary" disabled={!ready||evalBusy} onClick={review}>{evalBusy?<><LoaderCircle className="ss-spin" size={16}/> Sending to Reppo...</>:<>Request independent review <ShieldCheck size={16}/></>}</button></div>
+          <div className="ss-action-row"><span className={ready?"ss-hint":"ss-hint ss-warning"}>{checks.filter(c=>c[1]).length}/5 quotation checks passed</span><button className="ss-primary" disabled={!ready||evalBusy} onClick={()=>setTab("review")}>Continue to Reppo review <ArrowRight size={15}/></button></div>
           {error&&<div className="ss-error"><AlertTriangle size={16}/>{error}</div>}
         </div>}
         {tab==="review"&&<div className="ss-panel"><div className="ss-panel-head"><span className="ss-icon"><ShieldCheck size={18}/></span><div><h2>Independent quotation review</h2><p>Reppo's independent judges review the output against your brief and business rules.</p></div></div>
-          {!evalId?<div className="ss-empty"><ShieldCheck size={28}/><h3>No evaluation submitted yet</h3><p>Finish a quotation, then request an independent review.</p><button className="ss-primary" onClick={()=>setTab("quote")}>Return to quotation <ArrowUpRight size={15}/></button></div>:<><div className="ss-eval-id"><span>REPP0 EVALUATION ID</span><strong>{evalId}</strong><button className="ss-small-button" onClick={refreshReview} disabled={evalBusy}>{evalBusy?<LoaderCircle className="ss-spin" size={14}/>:<RotateCcw size={14}/>} Refresh verdict</button></div>
+          {!evalId?<div className="ss-empty"><ShieldCheck size={28}/><h3>Ready for independent review</h3><p>Your business profile, customer request and priced scope will be sent to Reppo for an independent assessment.</p><button className="ss-primary" disabled={!ready||evalBusy} onClick={review}>{evalBusy?<><LoaderCircle className="ss-spin" size={15}/> Submitting to Reppo...</>:<>Submit quotation to Reppo <ShieldCheck size={15}/></>}</button><button className="ss-text-link" onClick={()=>setTab("quote")}>Back to scope and quotation</button></div>:<><div className="ss-eval-id"><span>REPP0 EVALUATION ID</span><strong>{evalId}</strong><button className="ss-small-button" onClick={refreshReview} disabled={evalBusy}>{evalBusy?<LoaderCircle className="ss-spin" size={14}/>:<RotateCcw size={14}/>} Refresh verdict</button></div>
             <div className="ss-status"><span className="ss-status-dot"/><div><strong>{evalState?.status||"Submitted"}</strong><p>{evalState?.message||"The evaluation has been submitted. Independent judges need time to assess it."}</p></div></div>
             {evalState?.verdict&&<div className="ss-verdict"><div className="ss-score"><strong>{evalState.verdict.score??"—"}</strong><span>/ 100</span></div><div><span className="ss-kicker">REPP0 VERDICT · {evalState.verdict.decision||"PENDING"}</span><h3>{evalState.verdict.decision==="accept"?"Ready for your final approval":evalState.verdict.decision==="reject"?"Do not send this quotation":"Review the suggested changes"}</h3><p>Confidence: {evalState.verdict.confidence||"Not provided"} · Route: {evalState.action?.route||"Not provided"}</p></div></div>}
             {(evalState?.verdicts||[]).map((v,i)=><div className="ss-critique" key={i}><div><strong>{v.dimension||v.name||"Evaluation dimension"}</strong><span>{v.score??"—"}</span></div><p>{v.critique||v.feedback||v.reason||""}</p></div>)}
             {evalState?.error&&<div className="ss-error">{evalState.error}</div>}
-            <p className="ss-hint">The verdict is an independent signal, not a legal or accounting certification. You remain responsible for approving the quotation.</p>
+            <p className="ss-hint">The verdict is an independent signal, not a legal or accounting certification. You remain responsible for approving the quotation.</p><div className="ss-review-actions"><button className="ss-small-button" onClick={()=>setTab("quote")}>Back to scope</button><button className="ss-primary" onClick={()=>setTab("export")}>Continue to export <ArrowRight size={15}/></button></div>
           </>}</div>}
+        {tab==="export"&&<div className="ss-panel ss-export-panel"><div className="ss-panel-head"><span className="ss-icon"><FileText size={18}/></span><div><h2>Ready to export</h2><p>Your quotation has been submitted for independent review. Check the final document preview before printing.</p></div></div><div className="ss-export-summary"><div><span>PREPARED FOR</span><strong>{customer.name||"Customer name"}</strong></div><div><span>YOUR BUSINESS</span><strong>{profile.name||"Your business"}</strong></div><div><span>QUOTE TOTAL</span><strong>{fmt(total,"USD")}</strong></div><div><span>REFERENCE</span><strong>{quote.reference}</strong></div></div><div className="ss-export-check"><CheckCircle2 size={16}/><span>Reppo evaluation submitted · {evalState?.status||"Pending final verdict"}</span></div><div className="ss-review-actions"><button className="ss-small-button" onClick={()=>setTab("review")}>Back to Reppo review</button><button className="ss-primary" onClick={()=>window.print()}><Printer size={15}/> Print / save as PDF</button></div></div>}
       </section>
-      <aside className="ss-preview"><div className="ss-preview-top"><div><span className="ss-kicker">LIVE DOCUMENT</span><p>Customer-facing quotation</p></div><button className="ss-small-button" onClick={()=>window.print()}><Printer size={14}/> Print / PDF</button></div>
+      {tab==="export"&&<aside className="ss-preview"><div className="ss-preview-top"><div><span className="ss-kicker">LIVE DOCUMENT</span><p>Customer-facing quotation</p></div><button className="ss-small-button" onClick={()=>window.print()}><Printer size={14}/> Print / PDF</button></div>
         <article className="ss-paper"><div className="ss-paper-head"><div><div className="ss-paper-logo">S<span>.</span></div><strong>{profile.name||"Your business"}</strong><small>{profile.address} · {profile.email}</small></div><div className="ss-paper-type"><span>DOCUMENT</span><strong>QUOTATION</strong><small>{quote.reference}</small></div></div>
           <div className="ss-paper-title"><span>PROPOSAL / COST ESTIMATE</span><h2>{quote.title||"Untitled quotation"}</h2></div>
           <div className="ss-paper-parties"><div><span>PREPARED FOR</span><strong>{customer.name||"Customer name"}</strong><small>{customer.email}<br/>{customer.address}</small></div><div><span>ISSUED</span><strong>{quote.issuedAt}</strong><span>VALID UNTIL</span><strong>{quote.validUntil}</strong></div></div>
@@ -193,7 +210,7 @@ function App() {
           <footer>Prepared with care <span>·</span> {profile.name}</footer>
         </article>
         <div className="ss-preview-note"><ShieldCheck size={15}/><span>Every amount is recalculated by the application. AI cannot change your catalogue rates.</span></div>
-      </aside></div>
+      </aside>}
       <footer className="ss-footer"><span>Scope & Sum <i>·</i> Clear quotes, fewer surprises.</span><span>SERV REASONING + REPPO EVALUATION</span></footer>
     </main>
   </div>}</>;

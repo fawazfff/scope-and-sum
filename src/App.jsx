@@ -1,517 +1,138 @@
 import { useMemo, useState } from "react";
-import {
-  ArrowDownRight,
-  ArrowUpRight,
-  Building2,
-  CalendarDays,
-  Check,
-  CheckCircle2,
-  ChevronDown,
-  CircleHelp,
-  ClipboardCheck,
-  FileCheck2,
-  FileText,
-  Plus,
-  Printer,
-  ShieldCheck,
-  Trash2,
-  X,
-} from "lucide-react";
+import { ArrowUpRight, Plus, Trash2, FileText, ShieldCheck, Sparkles, CheckCircle2, AlertTriangle, LoaderCircle, Printer, RotateCcw, Building2 } from "lucide-react";
 
-const initialItems = [
-  { id: 1, description: "Brand identity direction", detail: "Concept, visual direction and logo suite", quantity: 1, price: 480000 },
-  { id: 2, description: "Social launch templates", detail: "Six editable templates for social channels", quantity: 1, price: 160000 },
-  { id: 3, description: "Packaging artwork", detail: "Two print-ready packaging layouts", quantity: 2, price: 62500 },
+const initialProfile = { name: "Fieldnote Studio", email: "hello@fieldnote.studio", phone: "+234 801 234 5678", address: "Lagos, Nigeria", currency: "NGN", taxRate: 0, terms: "50% deposit to begin. Remaining balance due on delivery. This quotation is valid for 14 days." };
+const sampleCatalogue = [
+  { id: 1, name: "Brand identity direction", description: "Concept, visual direction and logo suite", price: 480000 },
+  { id: 2, name: "Social launch templates", description: "Six editable templates for social channels", price: 160000 },
+  { id: 3, name: "Packaging artwork", description: "Print-ready packaging layouts", price: 62500 }
 ];
-
-const today = new Date();
-const expiry = new Date(today);
-expiry.setDate(expiry.getDate() + 14);
-const toDateInput = (date) => {
-  const local = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
-  return local.toISOString().slice(0, 10);
-};
-
-function money(value, currency) {
-  return new Intl.NumberFormat("en-NG", {
-    style: "currency",
-    currency,
-    currencyDisplay: "narrowSymbol",
-    maximumFractionDigits: 0,
-  }).format(Number(value) || 0);
-}
-
-function prettyDate(value) {
-  if (!value) return "Not set";
-  return new Date(value + "T12:00:00").toLocaleDateString("en-GB", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
-}
-
-function Field({ label, value, onChange, placeholder, type = "text", className = "", ...props }) {
-  return (
-    <label className={"field " + className}>
-      <span className="field-label">{label}</span>
-      <input
-        type={type}
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-        placeholder={placeholder}
-        {...props}
-      />
-    </label>
-  );
-}
+const fmt = (n, currency) => new Intl.NumberFormat("en-NG", { style: "currency", currency, maximumFractionDigits: 0 }).format(Number(n) || 0);
+const today = new Date().toISOString().slice(0,10);
+const plus14 = new Date(Date.now()+14*86400000).toISOString().slice(0,10);
 
 function App() {
-  const [business, setBusiness] = useState({
-    name: "Fieldnote Studio",
-    email: "hello@fieldnote.studio",
-    phone: "+234 801 234 5678",
-    address: "18 Akin Adesola Street, Lagos",
-  });
-  const [client, setClient] = useState({
-    name: "Aster & Co.",
-    email: "finance@asterand.co",
-    address: "Victoria Island, Lagos",
-  });
-  const [title, setTitle] = useState("Brand identity & launch");
-  const [reference, setReference] = useState("FN-2026-014");
-  const [currency, setCurrency] = useState("NGN");
-  const [issuedAt, setIssuedAt] = useState(toDateInput(today));
-  const [validUntil, setValidUntil] = useState(toDateInput(expiry));
-  const [notes, setNotes] = useState("Thanks for considering Fieldnote Studio. This quotation covers the work listed above. Any additional requests will be scoped and priced separately.");
-  const [items, setItems] = useState(initialItems);
-  const [taxRate, setTaxRate] = useState("0");
-  const [reviewed, setReviewed] = useState(false);
-  const [activeSection, setActiveSection] = useState("details");
-  const [showBusiness, setShowBusiness] = useState(true);
-  const [showClient, setShowClient] = useState(true);
-
-  const subtotal = useMemo(
-    () => items.reduce((sum, item) => sum + Math.max(0, Number(item.quantity) || 0) * Math.max(0, Number(item.price) || 0), 0),
-    [items]
-  );
-  const tax = subtotal * Math.max(0, Number(taxRate) || 0) / 100;
-  const total = subtotal + tax;
-
-  const updateBusiness = (key, value) => {
-    setBusiness((current) => ({ ...current, [key]: value }));
-    setReviewed(false);
+  const [profile,setProfile] = useState(()=>{try{return {...initialProfile,...JSON.parse(localStorage.getItem("ss-profile")||"{}")}}catch{return initialProfile}});
+  const [catalogue,setCatalogue] = useState(()=>{try{return JSON.parse(localStorage.getItem("ss-catalogue"))||sampleCatalogue}catch{return sampleCatalogue}});
+  const [customer,setCustomer] = useState({name:"Aster & Co.",email:"finance@asterand.co",address:"Victoria Island, Lagos"});
+  const [request,setRequest] = useState("We need a new brand identity, six social media launch templates, and packaging artwork for two product variants. Please include a clear scope, delivery notes and a 50% deposit.");
+  const [quote,setQuote] = useState({title:"Brand identity & launch",reference:"SS-2026-014",issuedAt:today,validUntil:plus14,notes:"Thank you for considering Fieldnote Studio.",items:[
+    {id:1,description:"Brand identity direction",detail:"Concept, visual direction and logo suite",quantity:1,price:480000},
+    {id:2,description:"Social launch templates",detail:"Six editable templates for social channels",quantity:1,price:160000},
+    {id:3,description:"Packaging artwork",detail:"Print-ready packaging layouts",quantity:2,price:62500}
+  ]});
+  const [tab,setTab] = useState("quote");
+  const [busy,setBusy] = useState(false);
+  const [error,setError] = useState("");
+  const [evalId,setEvalId] = useState("");
+  const [evalState,setEvalState] = useState(null);
+  const [evalBusy,setEvalBusy] = useState(false);
+  const [generationMeta,setGenerationMeta] = useState(null);
+  const subtotal = useMemo(()=>quote.items.reduce((s,i)=>s+Math.max(0,Number(i.quantity)||0)*Math.max(0,Number(i.price)||0),0),[quote.items]);
+  const tax = subtotal*(Math.max(0,Number(profile.taxRate)||0)/100);
+  const total = subtotal+tax;
+  const updateProfile=(k,v)=>setProfile(p=>{const n={...p,[k]:v};localStorage.setItem("ss-profile",JSON.stringify(n));return n});
+  const updateItem=(id,k,v)=>setQuote(q=>({...q,items:q.items.map(i=>i.id===id?{...i,[k]:v}:i)}));
+  const addItem=()=>setQuote(q=>({...q,items:[...q.items,{id:Date.now(),description:"",detail:"",quantity:1,price:0}]}));
+  const generate=async()=>{
+    setBusy(true);setError("");setEvalId("");setEvalState(null);setGenerationMeta(null);
+    try{
+      const res=await fetch("/api/generate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({request,profile,catalogue,customer,quoteContext:{reference:quote.reference,issuedAt:quote.issuedAt,validUntil:quote.validUntil,notes:quote.notes}})});
+      const data=await res.json();if(!res.ok)throw new Error(data.error||"Could not generate the quotation.");
+      setQuote(q=>({...q,title:data.quote.title||q.title,notes:data.quote.notes||q.notes,items:data.quote.items.map((i,index)=>({...i,id:Date.now()+index}))}));
+      setGenerationMeta({model:data.model||"SERV Reasoning",createdAt:new Date().toISOString()});setTab("quote");
+    }catch(e){setError(e.message||"Something went wrong.");}
+    finally{setBusy(false);}
   };
-  const updateClient = (key, value) => {
-    setClient((current) => ({ ...current, [key]: value }));
-    setReviewed(false);
+  const review=async()=>{
+    setEvalBusy(true);setError("");setEvalState(null);
+    try{
+      const payload={business:profile,customer,request,quote:{...quote,items:quote.items.map(i=>({...i,amount:(Number(i.quantity)||0)*(Number(i.price)||0)})),subtotal,tax,taxRate:profile.taxRate,total,currency:profile.currency}};
+      const res=await fetch("/api/evaluations",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
+      const data=await res.json();if(!res.ok)throw new Error(data.error||"Could not submit the Reppo evaluation.");
+      setEvalId(data.evalId);setEvalState(data.status?{status:data.status}: {status:"submitted"});setTab("review");
+    }catch(e){setError(e.message||"Reppo review failed.");}
+    finally{setEvalBusy(false);}
   };
-  const updateItem = (id, key, value) => {
-    setItems((current) => current.map((item) => item.id === id ? { ...item, [key]: value } : item));
-    setReviewed(false);
+  const refreshReview=async()=>{
+    if(!evalId)return;setEvalBusy(true);setError("");
+    try{const res=await fetch("/api/evaluations?id="+encodeURIComponent(evalId));const data=await res.json();if(!res.ok)throw new Error(data.error||"Could not retrieve evaluation.");setEvalState(data);}
+    catch(e){setError(e.message||"Could not refresh the evaluation.");}
+    finally{setEvalBusy(false);}
   };
-  const addItem = () => {
-    setItems((current) => [...current, {
-      id: Math.max(0, ...current.map((item) => item.id)) + 1,
-      description: "",
-      detail: "",
-      quantity: 1,
-      price: 0,
-    }]);
-    setReviewed(false);
-  };
-  const removeItem = (id) => {
-    setItems((current) => current.filter((item) => item.id !== id));
-    setReviewed(false);
-  };
-
-  const checks = useMemo(() => {
-    const hasBusiness = Boolean(business.name.trim() && business.email.trim());
-    const hasClient = Boolean(client.name.trim());
-    const hasItems = items.length > 0 && items.every((item) => item.description.trim() && Number(item.quantity) > 0 && Number(item.price) >= 0);
-    const hasPricedWork = items.some((item) => Number(item.price) > 0);
-    const hasValidity = Boolean(issuedAt && validUntil && validUntil >= issuedAt);
-    return [
-      { label: "Business details", detail: hasBusiness ? "Name and email are included" : "Add a business name and email", ok: hasBusiness },
-      { label: "Customer details", detail: hasClient ? "Customer is identified" : "Add the customer's name", ok: hasClient },
-      { label: "Line items", detail: hasItems && hasPricedWork ? "Descriptions, quantities and rates are present" : "Complete each line and add a priced item", ok: hasItems && hasPricedWork },
-      { label: "Quotation dates", detail: hasValidity ? "Expiry date follows the issue date" : "Check the issue and expiry dates", ok: hasValidity },
-      { label: "Arithmetic", detail: "Amounts and totals are calculated by the app", ok: true },
-    ];
-  }, [business, client, items, issuedAt, validUntil]);
-
-  const runPreflight = () => {
-    setReviewed(true);
-    setActiveSection("review");
-  };
-  const allPassed = checks.every((check) => check.ok);
-
-  return (
-    <div className="app-shell">
-      <header className="topbar">
-        <a className="brand" href="#" aria-label="Scope and Sum home">
-          <span className="brand-mark"><span>S</span><i /></span>
-          <span className="brand-wordmark">scope<span>&</span>sum</span>
-        </a>
-        <div className="topbar-center">
-          <span className="workspace-label">WORKSPACE</span>
-          <span className="crumb-divider">/</span>
-          <span className="crumb-current">New quotation</span>
-          <span className="draft-chip"><i /> Draft</span>
-        </div>
-        <div className="topbar-actions">
-          <button className="icon-button help-button" type="button" aria-label="Help"><CircleHelp size={17} /></button>
-          <span className="topbar-divider" />
-          <button className="user-menu" type="button">
-            <span className="user-avatar">F</span>
-            <span className="user-name">Fieldnote</span>
-            <ChevronDown size={14} />
-          </button>
-        </div>
-      </header>
-
-      <main className="page-wrap">
-        <div className="page-heading">
-          <div>
-            <div className="eyebrow"><span>01</span> / QUOTATION WORKSPACE</div>
-            <h1>Make the work <em>clear.</em></h1>
-            <p className="page-intro">Put the details in place. We’ll take care of the sums.</p>
+  const checks=[
+    ["Business identity",Boolean(profile.name.trim()&&profile.email.trim())],
+    ["Customer identified",Boolean(customer.name.trim())],
+    ["Every item priced",quote.items.length>0&&quote.items.every(i=>i.description.trim()&&Number(i.quantity)>0&&Number(i.price)>=0)],
+    ["Dates make sense",Boolean(quote.issuedAt&&quote.validUntil&&quote.validUntil>=quote.issuedAt)],
+    ["Totals calculated",Number.isFinite(total)&&total>=0]
+  ];
+  const ready=checks.every(c=>c[1]);
+  const addCatalogue=()=>{const item={id:Date.now(),name:"New service",description:"",price:0};const next=[...catalogue,item];setCatalogue(next);localStorage.setItem("ss-catalogue",JSON.stringify(next));};
+  const saveCatalogue=(id,k,v)=>setCatalogue(items=>{const next=items.map(i=>i.id===id?{...i,[k]:v}:i);localStorage.setItem("ss-catalogue",JSON.stringify(next));return next;});
+  return <div className="ss-app">
+    <header className="ss-nav"><a className="ss-brand" href="#"><span className="ss-mark">S<span>.</span></span><span>scope<span>&</span>sum</span></a><div className="ss-nav-meta">QUOTATION WORKSPACE <i>/</i> {tab==="profile"?"Business setup":tab==="review"?"Independent review":"New quotation"}</div><button className="ss-nav-button" onClick={()=>setTab("profile")}><Building2 size={15}/> Business profile</button></header>
+    <main className="ss-main">
+      <section className="ss-heading"><div><div className="ss-kicker">QUOTATIONS, WITH A SECOND SET OF EYES</div><h1>Make the work <em>clear.</em></h1><p>Turn a customer's request into a priced scope, then get an independent review before it leaves your desk.</p></div><div className="ss-heading-mark">01 <span>/</span> 03</div></section>
+      <div className="ss-layout"><section className="ss-work">
+        <div className="ss-tabs"><button className={tab==="quote"?"active":""} onClick={()=>setTab("quote")}>01 &nbsp; Quotation</button><button className={tab==="review"?"active":""} onClick={()=>setTab("review")}>02 &nbsp; Reppo review</button><button className={tab==="profile"?"active":""} onClick={()=>setTab("profile")}>03 &nbsp; Business & rates</button></div>
+        {tab==="profile"&&<div className="ss-panel"><div className="ss-panel-head"><span className="ss-icon"><Building2 size={18}/></span><div><h2>Your business profile</h2><p>These details and rates are used when SERV drafts quotations.</p></div></div><div className="ss-form-grid">
+          {["name","email","phone","address"].map(k=><label className="ss-field" key={k}><span>{k==="name"?"BUSINESS NAME":k.toUpperCase()}</span><input value={profile[k]} onChange={e=>updateProfile(k,e.target.value)}/></label>)}
+          <label className="ss-field"><span>CURRENCY</span><select value={profile.currency} onChange={e=>updateProfile("currency",e.target.value)}><option value="NGN">NGN · Nigerian naira</option><option value="USD">USD · US dollar</option><option value="GBP">GBP · British pound</option></select></label>
+          <label className="ss-field"><span>TAX RATE (%)</span><input type="number" min="0" max="100" value={profile.taxRate} onChange={e=>updateProfile("taxRate",e.target.value)}/></label>
+          <label className="ss-field ss-full"><span>DEFAULT PAYMENT TERMS</span><textarea value={profile.terms} onChange={e=>updateProfile("terms",e.target.value)}/></label>
+        </div><div className="ss-divider"/><div className="ss-panel-head"><span className="ss-icon warm"><FileText size={18}/></span><div><h2>Service catalogue</h2><p>Use your own prices. SERV can only quote services listed here.</p></div><button className="ss-small-button" onClick={addCatalogue}><Plus size={14}/> Add service</button></div>
+          {catalogue.map(item=><div className="ss-catalogue-row" key={item.id}><input aria-label="Service name" value={item.name} onChange={e=>saveCatalogue(item.id,"name",e.target.value)}/><input aria-label="Service description" value={item.description} placeholder="Scope / what's included" onChange={e=>saveCatalogue(item.id,"description",e.target.value)}/><input aria-label="Service price" type="number" value={item.price} onChange={e=>saveCatalogue(item.id,"price",e.target.value)}/><button className="ss-icon-button" onClick={()=>{const n=catalogue.filter(x=>x.id!==item.id);setCatalogue(n);localStorage.setItem("ss-catalogue",JSON.stringify(n));}}><Trash2 size={14}/></button></div>)}
+          <p className="ss-hint">Your profile and catalogue are saved in this browser. They are not sent to Reppo.</p>
+        </div>}
+        {tab==="quote"&&<div className="ss-panel">
+          <div className="ss-panel-head"><span className="ss-icon"><Sparkles size={18}/></span><div><h2>Start with the customer's request</h2><p>SERV Reasoning turns this brief into a quotation using your catalogue.</p></div><span className="ss-powered">POWERED BY SERV</span></div>
+          <label className="ss-field"><span>CUSTOMER REQUEST</span><textarea className="ss-request" value={request} onChange={e=>setRequest(e.target.value)} placeholder="Describe what the customer needs..."/></label>
+          <div className="ss-form-grid ss-customer-grid">
+            <label className="ss-field"><span>CUSTOMER / COMPANY</span><input value={customer.name} onChange={e=>setCustomer({...customer,name:e.target.value})}/></label>
+            <label className="ss-field"><span>CUSTOMER EMAIL</span><input value={customer.email} onChange={e=>setCustomer({...customer,email:e.target.value})}/></label>
+            <label className="ss-field ss-full"><span>CUSTOMER ADDRESS</span><input value={customer.address} onChange={e=>setCustomer({...customer,address:e.target.value})}/></label>
           </div>
-          <div className="heading-meta">
-            <span className="meta-label">DOCUMENT REF.</span>
-            <strong>{reference || "Not assigned"}</strong>
-            <span className="meta-sub">Last edited just now</span>
+          <div className="ss-action-row"><span className="ss-hint">SERV is restricted to your saved service catalogue and prices.</span><button className="ss-primary" disabled={busy||!request.trim()} onClick={generate}>{busy?<><LoaderCircle className="ss-spin" size={16}/> Drafting...</>:<>Generate quotation <ArrowUpRight size={16}/></>}</button></div>
+          {error&&<div className="ss-error"><AlertTriangle size={16}/>{error}</div>}
+          {generationMeta&&<div className="ss-success"><CheckCircle2 size={16}/> Draft generated with {generationMeta.model}. Review every line before sending.</div>}
+          <div className="ss-divider"/>
+          <div className="ss-panel-head"><span className="ss-icon warm"><FileText size={18}/></span><div><h2>Quotation details</h2><p>Edit the draft and see the document update on the right.</p></div></div>
+          <div className="ss-form-grid">
+            <label className="ss-field ss-full"><span>PROJECT / QUOTATION TITLE</span><input value={quote.title} onChange={e=>setQuote({...quote,title:e.target.value})}/></label>
+            <label className="ss-field"><span>REFERENCE</span><input value={quote.reference} onChange={e=>setQuote({...quote,reference:e.target.value})}/></label>
+            <label className="ss-field"><span>ISSUED ON</span><input type="date" value={quote.issuedAt} onChange={e=>setQuote({...quote,issuedAt:e.target.value})}/></label>
+            <label className="ss-field"><span>VALID UNTIL</span><input type="date" value={quote.validUntil} onChange={e=>setQuote({...quote,validUntil:e.target.value})}/></label>
           </div>
-        </div>
-
-        <div className="workspace-grid">
-          <section className="editor-column" aria-label="Quotation editor">
-            <div className="editor-toolbar">
-              <div className="section-tabs" role="tablist" aria-label="Editor sections">
-                <button type="button" className={activeSection === "details" ? "section-tab active" : "section-tab"} onClick={() => setActiveSection("details")}>
-                  <span>01</span> Details
-                </button>
-                <button type="button" className={activeSection === "review" ? "section-tab active" : "section-tab"} onClick={() => setActiveSection("review")}>
-                  <span>02</span> Review
-                </button>
-              </div>
-              <span className="autosave"><span className="save-dot" /> Changes saved locally</span>
-            </div>
-
-            {activeSection === "details" ? (
-              <div className="editor-card">
-                <section className="editor-section">
-                  <div className="section-heading">
-                    <div className="section-icon"><Building2 size={17} /></div>
-                    <div>
-                      <h2>Your business</h2>
-                      <p>Who is sending this quotation?</p>
-                    </div>
-                    <button type="button" className="collapse-button" onClick={() => setShowBusiness(!showBusiness)} aria-label="Toggle business details">
-                      {showBusiness ? <ChevronDown size={17} /> : <ArrowDownRight size={17} />}
-                    </button>
-                  </div>
-                  {showBusiness && (
-                    <div className="fields-grid">
-                      <Field label="Business name" value={business.name} onChange={(value) => updateBusiness("name", value)} placeholder="Your business name" />
-                      <Field label="Email address" type="email" value={business.email} onChange={(value) => updateBusiness("email", value)} placeholder="you@business.com" />
-                      <Field label="Phone number" value={business.phone} onChange={(value) => updateBusiness("phone", value)} placeholder="+234 ..." />
-                      <Field label="Business address" value={business.address} onChange={(value) => updateBusiness("address", value)} placeholder="Street, city" />
-                    </div>
-                  )}
-                </section>
-
-                <div className="section-rule" />
-
-                <section className="editor-section">
-                  <div className="section-heading">
-                    <div className="section-icon rust"><FileText size={17} /></div>
-                    <div>
-                      <h2>Prepared for</h2>
-                      <p>Who will receive this quotation?</p>
-                    </div>
-                    <button type="button" className="collapse-button" onClick={() => setShowClient(!showClient)} aria-label="Toggle customer details">
-                      {showClient ? <ChevronDown size={17} /> : <ArrowDownRight size={17} />}
-                    </button>
-                  </div>
-                  {showClient && (
-                    <div className="fields-grid">
-                      <Field label="Customer / company" value={client.name} onChange={(value) => updateClient("name", value)} placeholder="Customer name" />
-                      <Field label="Customer email" type="email" value={client.email} onChange={(value) => updateClient("email", value)} placeholder="customer@example.com" />
-                      <Field label="Customer address" className="full-field" value={client.address} onChange={(value) => updateClient("address", value)} placeholder="Address, city" />
-                    </div>
-                  )}
-                </section>
-
-                <div className="section-rule" />
-
-                <section className="editor-section">
-                  <div className="section-heading">
-                    <div className="section-icon gold"><CalendarDays size={17} /></div>
-                    <div>
-                      <h2>Quote details</h2>
-                      <p>Give the work a name and a timeframe.</p>
-                    </div>
-                  </div>
-                  <div className="fields-grid">
-                    <Field label="Project / quotation title" className="full-field" value={title} onChange={setTitle} placeholder="What is this quote for?" />
-                    <Field label="Reference number" value={reference} onChange={setReference} placeholder="e.g. Q-001" />
-                    <label className="field">
-                      <span className="field-label">Currency</span>
-                      <select value={currency} onChange={(event) => setCurrency(event.target.value)}>
-                        <option value="NGN">NGN · Nigerian naira</option>
-                        <option value="USD">USD · US dollar</option>
-                        <option value="GBP">GBP · British pound</option>
-                      </select>
-                    </label>
-                    <Field label="Issue date" type="date" value={issuedAt} onChange={setIssuedAt} />
-                    <Field label="Valid until" type="date" value={validUntil} onChange={setValidUntil} />
-                  </div>
-                </section>
-
-                <div className="section-rule" />
-
-                <section className="editor-section items-section">
-                  <div className="section-heading items-heading">
-                    <div className="section-icon green"><ClipboardCheck size={17} /></div>
-                    <div>
-                      <h2>Scope & pricing</h2>
-                      <p>Be specific about what’s included.</p>
-                    </div>
-                    <span className="item-count">{items.length} {items.length === 1 ? "item" : "items"}</span>
-                  </div>
-
-                  <div className="line-editor">
-                    <div className="line-editor-head">
-                      <span>DESCRIPTION</span>
-                      <span>QTY</span>
-                      <span>RATE ({currency})</span>
-                      <span />
-                    </div>
-                    {items.map((item, index) => (
-                      <div className="line-editor-row" key={item.id}>
-                        <div className="line-description">
-                          <input
-                            aria-label={"Item " + (index + 1) + " description"}
-                            value={item.description}
-                            onChange={(event) => updateItem(item.id, "description", event.target.value)}
-                            placeholder="Service or product"
-                          />
-                          <input
-                            aria-label={"Item " + (index + 1) + " detail"}
-                            className="line-detail-input"
-                            value={item.detail}
-                            onChange={(event) => updateItem(item.id, "detail", event.target.value)}
-                            placeholder="A short description (optional)"
-                          />
-                        </div>
-                        <input
-                          aria-label={"Item " + (index + 1) + " quantity"}
-                          className="qty-input"
-                          type="number"
-                          min="1"
-                          value={item.quantity}
-                          onChange={(event) => updateItem(item.id, "quantity", event.target.value)}
-                        />
-                        <input
-                          aria-label={"Item " + (index + 1) + " rate"}
-                          className="rate-input"
-                          type="number"
-                          min="0"
-                          value={item.price}
-                          onChange={(event) => updateItem(item.id, "price", event.target.value)}
-                        />
-                        <button className="remove-line" type="button" onClick={() => removeItem(item.id)} aria-label="Remove line item"><Trash2 size={15} /></button>
-                      </div>
-                    ))}
-                    <button type="button" className="add-line-button" onClick={addItem}>
-                      <Plus size={15} /> Add a line item
-                    </button>
-                  </div>
-
-                  <div className="totals-editor">
-                    <div className="tax-control">
-                      <span className="field-label">Tax rate</span>
-                      <div className="tax-input-wrap">
-                        <input aria-label="Tax percentage" type="number" min="0" max="100" step="0.5" value={taxRate} onChange={(event) => { setTaxRate(event.target.value); setReviewed(false); }} />
-                        <span>%</span>
-                      </div>
-                    </div>
-                    <div className="totals-mini">
-                      <div><span>Subtotal</span><strong>{money(subtotal, currency)}</strong></div>
-                      <div><span>Tax</span><strong>{money(tax, currency)}</strong></div>
-                      <div className="total-row"><span>Total</span><strong>{money(total, currency)}</strong></div>
-                    </div>
-                  </div>
-                </section>
-
-                <div className="section-rule" />
-
-                <section className="editor-section notes-section">
-                  <div className="section-heading">
-                    <div className="section-icon pale"><FileCheck2 size={17} /></div>
-                    <div>
-                      <h2>Notes & terms</h2>
-                      <p>Anything the customer should know?</p>
-                    </div>
-                  </div>
-                  <label className="field">
-                    <textarea value={notes} onChange={(event) => { setNotes(event.target.value); setReviewed(false); }} rows="3" placeholder="Add payment terms, delivery notes or a simple thank you..." />
-                  </label>
-                </section>
-
-                <div className="editor-footer">
-                  <span><ShieldCheck size={15} /> Your numbers update as you edit.</span>
-                  <button type="button" className="primary-button" onClick={runPreflight}>Review quotation <ArrowUpRight size={16} /></button>
-                </div>
-              </div>
-            ) : (
-              <div className="review-card">
-                <div className="review-card-top">
-                  <div className="review-emblem"><ShieldCheck size={22} /></div>
-                  <div>
-                    <span className="eyebrow">PRE-SEND CHECK</span>
-                    <h2>Give it one last look.</h2>
-                    <p>Catch missing details before the quotation reaches your customer.</p>
-                  </div>
-                </div>
-                {!reviewed ? (
-                  <div className="review-empty">
-                    <div className="review-empty-icon"><ClipboardCheck size={24} /></div>
-                    <h3>Ready when you are.</h3>
-                    <p>Run a quick local check on the business details, customer, line items, dates and arithmetic.</p>
-                    <button type="button" className="primary-button" onClick={runPreflight}>Run preflight checks <ArrowUpRight size={16} /></button>
-                  </div>
-                ) : (
-                  <div className="review-results">
-                    <div className={allPassed ? "review-result-banner passed" : "review-result-banner needs-work"}>
-                      {allPassed ? <CheckCircle2 size={20} /> : <CircleHelp size={20} />}
-                      <div>
-                        <strong>{allPassed ? "Your draft is complete" : "A few details need attention"}</strong>
-                        <span>{checks.filter((check) => check.ok).length} of {checks.length} local checks passed</span>
-                      </div>
-                    </div>
-                    {checks.map((check) => (
-                      <div className="check-row" key={check.label}>
-                        <span className={check.ok ? "check-icon ok" : "check-icon fail"}>{check.ok ? <Check size={14} /> : <X size={14} />}</span>
-                        <div><strong>{check.label}</strong><span>{check.detail}</span></div>
-                        <span className={check.ok ? "check-state good" : "check-state bad"}>{check.ok ? "Passed" : "Fix"}</span>
-                      </div>
-                    ))}
-                    <div className="reppo-notice">
-                      <div className="reppo-lock"><ShieldCheck size={17} /></div>
-                      <div>
-                        <strong>Independent Reppo review</strong>
-                        <p>Not connected yet. This preview checks document completeness and arithmetic locally. Reppo evaluation will be added as a separate review step.</p>
-                      </div>
-                      <span className="coming-tag">NEXT</span>
-                    </div>
-                    <button type="button" className="secondary-button" onClick={() => setActiveSection("details")}>Back to edit <ArrowDownRight size={15} /></button>
-                  </div>
-                )}
-              </div>
-            )}
-          </section>
-
-          <aside className="preview-column" aria-label="Live quotation preview">
-            <div className="preview-topline">
-              <div>
-                <span className="eyebrow">LIVE PREVIEW</span>
-                <span className="preview-subtitle">What your customer will see</span>
-              </div>
-              <button type="button" className="print-button" onClick={() => window.print()}><Printer size={15} /> Export PDF</button>
-            </div>
-
-            <article className="quote-paper">
-              <div className="paper-top">
-                <div className="paper-brand">
-                  <span className="paper-monogram">S<span>.</span></span>
-                  <div><strong>{business.name || "Your business"}</strong><span>{business.address}</span></div>
-                </div>
-                <div className="paper-type">
-                  <span>DOCUMENT</span>
-                  <strong>QUOTATION</strong>
-                  <small>{reference || "DRAFT"}</small>
-                </div>
-              </div>
-
-              <div className="paper-title-block">
-                <span className="paper-kicker">A CLEAR AGREEMENT STARTS HERE</span>
-                <h2>{title || "Untitled quotation"}</h2>
-                <div className="paper-title-rule" />
-              </div>
-
-              <div className="paper-parties">
-                <div>
-                  <span className="paper-label">PREPARED FOR</span>
-                  <strong>{client.name || "Customer name"}</strong>
-                  <span>{client.email}</span>
-                  <span>{client.address}</span>
-                </div>
-                <div className="paper-dates">
-                  <div><span className="paper-label">ISSUED</span><strong>{prettyDate(issuedAt)}</strong></div>
-                  <div><span className="paper-label">VALID UNTIL</span><strong>{prettyDate(validUntil)}</strong></div>
-                </div>
-              </div>
-
-              <div className="paper-items">
-                <div className="paper-table-head">
-                  <span>DESCRIPTION</span><span>QTY</span><span>RATE</span><span>AMOUNT</span>
-                </div>
-                {items.map((item) => (
-                  <div className="paper-item" key={item.id}>
-                    <div><strong>{item.description || "Untitled item"}</strong>{item.detail && <span>{item.detail}</span>}</div>
-                    <span>{item.quantity || 0}</span>
-                    <span>{money(item.price, currency)}</span>
-                    <strong>{money((Number(item.quantity) || 0) * (Number(item.price) || 0), currency)}</strong>
-                  </div>
-                ))}
-                {items.length === 0 && <div className="paper-empty">Your line items will appear here.</div>}
-              </div>
-
-              <div className="paper-bottom">
-                <div className="paper-note">
-                  <span className="paper-label">A NOTE FROM US</span>
-                  <p>{notes || "No additional notes."}</p>
-                  <span className="paper-signoff">Thank you for the opportunity.</span>
-                </div>
-                <div className="paper-total">
-                  <div><span>Subtotal</span><strong>{money(subtotal, currency)}</strong></div>
-                  <div><span>Tax ({Number(taxRate) || 0}%)</span><strong>{money(tax, currency)}</strong></div>
-                  <div className="paper-grand-total"><span>TOTAL DUE</span><strong>{money(total, currency)}</strong></div>
-                </div>
-              </div>
-
-              <div className="paper-footer">
-                <span>{business.email || "Business email"} {business.phone && "· " + business.phone}</span>
-                <span>MADE WITH CARE <i>✳</i></span>
-              </div>
-              <div className="paper-watermark">SCOPE & SUM</div>
-            </article>
-
-            <div className="preview-footnote">
-              <span className="preview-footnote-icon"><Check size={13} /></span>
-              <p>Live preview. Changes on the left appear here instantly.</p>
-              <span className="preview-live">LIVE</span>
-            </div>
-
-            <div className="review-teaser">
-              <div className="teaser-icon"><ShieldCheck size={18} /></div>
-              <div>
-                <strong>A second set of eyes.</strong>
-                <p>Local checks are ready. Independent Reppo review is the next integration.</p>
-              </div>
-              <button type="button" className="teaser-arrow" onClick={runPreflight} aria-label="Open review"><ArrowUpRight size={17} /></button>
-            </div>
-          </aside>
-        </div>
-
-        <footer className="app-footer">
-          <span>Scope & Sum <i>·</i> Clear quotes, fewer surprises.</span>
-          <span>BUILT FOR THE DETAILS THAT MATTER</span>
-        </footer>
-      </main>
-    </div>
-  );
+          <div className="ss-line-head"><span>SCOPE / DELIVERABLE</span><span>QTY</span><span>RATE · {profile.currency}</span><span></span></div>
+          {quote.items.map((item)=><div className="ss-line" key={item.id}><div><input value={item.description} placeholder="Service name" onChange={e=>updateItem(item.id,"description",e.target.value)}/><input className="ss-detail" value={item.detail||""} placeholder="What's included" onChange={e=>updateItem(item.id,"detail",e.target.value)}/></div><input type="number" min="1" value={item.quantity} onChange={e=>updateItem(item.id,"quantity",e.target.value)}/><input type="number" min="0" value={item.price} onChange={e=>updateItem(item.id,"price",e.target.value)}/><button className="ss-icon-button" onClick={()=>setQuote({...quote,items:quote.items.filter(x=>x.id!==item.id)})}><Trash2 size={14}/></button></div>)}
+          <button className="ss-add-line" onClick={addItem}><Plus size={15}/> Add a line item</button>
+          <label className="ss-field ss-notes"><span>NOTES & PAYMENT TERMS</span><textarea value={quote.notes} onChange={e=>setQuote({...quote,notes:e.target.value})}/></label>
+          <div className="ss-total-line"><span>Subtotal</span><strong>{fmt(subtotal,profile.currency)}</strong></div><div className="ss-total-line"><span>Tax · {profile.taxRate}%</span><strong>{fmt(tax,profile.currency)}</strong></div><div className="ss-total-line ss-grand"><span>Total</span><strong>{fmt(total,profile.currency)}</strong></div>
+          <div className="ss-action-row"><span className={ready?"ss-hint":"ss-hint ss-warning"}>{checks.filter(c=>c[1]).length}/5 preflight checks passed</span><button className="ss-primary" disabled={!ready||evalBusy} onClick={review}>{evalBusy?<><LoaderCircle className="ss-spin" size={16}/> Sending to Reppo...</>:<>Request independent review <ShieldCheck size={16}/></>}</button></div>
+          {error&&<div className="ss-error"><AlertTriangle size={16}/>{error}</div>}
+        </div>}
+        {tab==="review"&&<div className="ss-panel"><div className="ss-panel-head"><span className="ss-icon"><ShieldCheck size={18}/></span><div><h2>Independent quotation review</h2><p>Reppo's independent judges review the output against your brief and business rules.</p></div></div>
+          {!evalId?<div className="ss-empty"><ShieldCheck size={28}/><h3>No evaluation submitted yet</h3><p>Finish a quotation, then request an independent review.</p><button className="ss-primary" onClick={()=>setTab("quote")}>Return to quotation <ArrowUpRight size={15}/></button></div>:<><div className="ss-eval-id"><span>REPP0 EVALUATION ID</span><strong>{evalId}</strong><button className="ss-small-button" onClick={refreshReview} disabled={evalBusy}>{evalBusy?<LoaderCircle className="ss-spin" size={14}/>:<RotateCcw size={14}/>} Refresh verdict</button></div>
+            <div className="ss-status"><span className="ss-status-dot"/><div><strong>{evalState?.status||"Submitted"}</strong><p>{evalState?.message||"The evaluation has been submitted. Independent judges need time to assess it."}</p></div></div>
+            {evalState?.verdict&&<div className="ss-verdict"><div className="ss-score"><strong>{evalState.verdict.score??"—"}</strong><span>/ 100</span></div><div><span className="ss-kicker">REPP0 VERDICT · {evalState.verdict.decision||"PENDING"}</span><h3>{evalState.verdict.decision==="accept"?"Ready for your final approval":evalState.verdict.decision==="reject"?"Do not send this quotation":"Review the suggested changes"}</h3><p>Confidence: {evalState.verdict.confidence||"Not provided"} · Route: {evalState.action?.route||"Not provided"}</p></div></div>}
+            {(evalState?.verdicts||[]).map((v,i)=><div className="ss-critique" key={i}><div><strong>{v.dimension||v.name||"Evaluation dimension"}</strong><span>{v.score??"—"}</span></div><p>{v.critique||v.feedback||v.reason||""}</p></div>)}
+            {evalState?.error&&<div className="ss-error">{evalState.error}</div>}
+            <p className="ss-hint">The verdict is an independent signal, not a legal or accounting certification. You remain responsible for approving the quotation.</p>
+          </>}</div>}
+      </section>
+      <aside className="ss-preview"><div className="ss-preview-top"><div><span className="ss-kicker">LIVE DOCUMENT</span><p>Customer-facing quotation</p></div><button className="ss-small-button" onClick={()=>window.print()}><Printer size={14}/> Print / PDF</button></div>
+        <article className="ss-paper"><div className="ss-paper-head"><div><div className="ss-paper-logo">S<span>.</span></div><strong>{profile.name||"Your business"}</strong><small>{profile.address} · {profile.email}</small></div><div className="ss-paper-type"><span>DOCUMENT</span><strong>QUOTATION</strong><small>{quote.reference}</small></div></div>
+          <div className="ss-paper-title"><span>PROPOSAL / COST ESTIMATE</span><h2>{quote.title||"Untitled quotation"}</h2></div>
+          <div className="ss-paper-parties"><div><span>PREPARED FOR</span><strong>{customer.name||"Customer name"}</strong><small>{customer.email}<br/>{customer.address}</small></div><div><span>ISSUED</span><strong>{quote.issuedAt}</strong><span>VALID UNTIL</span><strong>{quote.validUntil}</strong></div></div>
+          <div className="ss-paper-table"><div className="ss-paper-th"><span>DESCRIPTION</span><span>QTY</span><span>RATE</span><span>AMOUNT</span></div>{quote.items.map(i=><div className="ss-paper-row" key={i.id}><div><strong>{i.description||"Unspecified work"}</strong><small>{i.detail}</small></div><span>{i.quantity}</span><span>{fmt(i.price,profile.currency)}</span><strong>{fmt((Number(i.quantity)||0)*(Number(i.price)||0),profile.currency)}</strong></div>)}</div>
+          <div className="ss-paper-bottom"><div><span>NOTES & TERMS</span><p>{quote.notes||profile.terms}</p><small>{profile.phone}</small></div><div><div><span>SUBTOTAL</span><strong>{fmt(subtotal,profile.currency)}</strong></div><div><span>TAX</span><strong>{fmt(tax,profile.currency)}</strong></div><div className="ss-paper-total"><span>TOTAL DUE</span><strong>{fmt(total,profile.currency)}</strong></div></div></div>
+          <footer>Prepared with care <span>·</span> {profile.name}</footer>
+        </article>
+        <div className="ss-preview-note"><ShieldCheck size={15}/><span>Every amount is recalculated by the application. AI cannot change your catalogue rates.</span></div>
+      </aside></div>
+      <footer className="ss-footer"><span>Scope & Sum <i>·</i> Clear quotes, fewer surprises.</span><span>SERV REASONING + REPPO EVALUATION</span></footer>
+    </main>
+  </div>;
 }
-
 export default App;

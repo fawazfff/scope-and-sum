@@ -242,7 +242,7 @@ button:focus-visible,
 .ss-splitmate .ss-primary:active{transform:translateY(1px) scale(.985)}
 .ss-splitmate button:focus-visible,.ss-splitmate a:focus-visible{outline:3px solid rgba(49,92,244,.28);outline-offset:3px}
 .ss-menu-toggle{display:none;background:none;border:1px solid var(--ss-line);border-radius:6px;padding:8px;color:var(--ss-ink)}
-.ss-mobile-nav{display:none!important}
+.ss-mobile-nav{display:none}
 .ss-home-editorial{max-width:1168px;margin:0 auto;padding:54px 24px 72px}
 .ss-home-intro{display:grid;grid-template-columns:1.05fr .95fr;gap:46px;align-items:center;padding:56px 0 64px;border-bottom:1px solid var(--ss-line)}
 .ss-home-intro-copy h1{max-width:620px;margin:12px 0 18px;font-size:clamp(45px,6vw,78px);line-height:.96;letter-spacing:-.075em;font-weight:900;color:var(--ss-ink)}
@@ -503,3 +503,7 @@ button:focus-visible,
 .ss-line select option{background:#fffefa;color:#3e4b40}
 .ss-line input[readonly]{color:#526653;cursor:default}
 .ss-line input[readonly]:focus{background:transparent}
+
+/* Keep project links visible in the main navigation and accessible on small screens. */
+@media(min-width:801px){.ss-split-nav nav{gap:clamp(12px,1.5vw,20px)}.ss-split-nav nav a,.ss-split-nav nav button{font-size:12px;white-space:nowrap}}
+@media(max-width:800px){.ss-split-nav{position:sticky}.ss-split-nav>nav[aria-label="Primary navigation"]{display:none}.ss-split-nav .ss-menu-toggle{display:grid;place-items:center}.ss-split-nav .ss-mobile-nav{display:flex!important;position:absolute;top:calc(100% + 1px);right:16px;left:16px;z-index:40;flex-direction:column;align-items:stretch;gap:0;padding:10px 18px;border:1px solid var(--ss-line);border-radius:0 0 8px 8px;background:#fffefa;box-shadow:0 12px 28px #20201d16}.ss-split-nav .ss-mobile-nav a,.ss-split-nav .ss-mobile-nav button{padding:12px 0;text-align:left;border-bottom:1px solid #eeece6}.ss-split-nav .ss-mobile-nav button{border-bottom:0}}

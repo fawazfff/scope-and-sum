@@ -26,9 +26,18 @@ export default async function handler(req,res){
     if(!raw)throw new Error("SERV returned an empty response.");
     const cleaned=raw.replace(/^```(?:json)?\s*/i,"").replace(/\s*```$/,"").trim();
     let quote;try{quote=JSON.parse(cleaned)}catch{const match=cleaned.match(/\{[\s\S]*\}/);if(!match)throw new Error("SERV response was not valid quotation JSON. Please retry.");quote=JSON.parse(match[0]);}
-    if(!Array.isArray(quote.items)||!quote.items.length)throw new Error("SERV could not match any requested work to your catalogue.");
+    // SERV may return equivalent line items under either "items" or "lineItems".
+    // Normalize common field names before enforcing the catalogue as the source of truth.
+    const generatedItems=Array.isArray(quote.items)?quote.items:Array.isArray(quote.lineItems)?quote.lineItems:[];
+    if(!generatedItems.length)throw new Error("SERV returned a quotation without any line items. Please retry.");
     const allowed=new Map(catalogue.map(x=>[String(x.name).trim().toLowerCase(),Number(x.price)]));
-    quote.items=quote.items.map(item=>{const key=String(item.description||"").trim().toLowerCase();if(!allowed.has(key))throw new Error("SERV returned a service outside your approved catalogue. No quotation was created.");const qty=Math.max(1,Math.min(1000,Number(item.quantity)||1));return {description:String(item.description),detail:String(item.detail||""),quantity:qty,price:allowed.get(key)};});
+    quote.items=generatedItems.map(item=>{
+      const description=String(item.description||item.serviceName||item.service||item.name||"").trim();
+      const key=description.toLowerCase();
+      if(!allowed.has(key))throw new Error("SERV returned a service outside your approved catalogue: "+(description||"unnamed item")+". No quotation was created.");
+      const qty=Math.max(1,Math.min(1000,Number(item.quantity??item.qty)||1));
+      return {description,detail:String(item.detail||item.details||item.scope||""),quantity:qty,price:allowed.get(key)};
+    });
     quote.notes=[quote.notes||"",...(Array.isArray(quote.assumptions)&&quote.assumptions.length?["Assumptions: "+quote.assumptions.join("; ")]:[]),...(Array.isArray(quote.exclusions)&&quote.exclusions.length?["Needs manual scoping: "+quote.exclusions.join("; ")]:[]),profile?.terms||""].filter(Boolean).join("\n\n");
     return res.status(200).json({quote,model});
   }catch(error){console.error("SERV generation error:",error);return res.status(502).json({error:error.message||"SERV generation failed."});}

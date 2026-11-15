@@ -5,8 +5,19 @@ export default async function handler(req,res){
     try{
       const {business,customer,request,quote}=req.body||{};
       if(!quote||!Array.isArray(quote.items)||!quote.items.length)return res.status(400).json({error:"Create a quotation before requesting a review."});
+      if(!Array.isArray(business?.catalogue)||!business.catalogue.length)return res.status(400).json({error:"Business catalogue is required for price verification."});
+      const approved=new Map(business.catalogue.map(item=>[String(item.name||"").trim().toLowerCase(),Number(item.price)]));
+      for(const item of quote.items){
+        const key=String(item.description||"").trim().toLowerCase();
+        if(!approved.has(key))return res.status(400).json({error:"A quotation line is not in the approved business catalogue: "+String(item.description||"Unnamed item")});
+        if(Number(item.price)!==approved.get(key))return res.status(400).json({error:"A quotation rate does not match the approved catalogue price for "+item.description+"."});
+        if(!Number.isFinite(Number(item.quantity))||Number(item.quantity)<=0)return res.status(400).json({error:"Every quotation quantity must be greater than zero."});
+      }
+      const calculatedSubtotal=quote.items.reduce((sum,item)=>sum+Number(item.quantity)*Number(item.price),0);
+      const calculatedTax=calculatedSubtotal*(Math.max(0,Number(business.taxRate)||0)/100);
+      const verifiedQuote={...quote,subtotal:calculatedSubtotal,tax:calculatedTax,total:calculatedSubtotal+calculatedTax,currency:"USD"};
       const context={purpose:"Independent quality review of a business quotation drafted by an AI assistant.",business,customer,originalCustomerRequest:request,reviewInstructions:"Judge whether the quotation accurately and completely addresses the customer's request, uses the supplied business rules and prices, has clear deliverables, sensible quantities, correct arithmetic, and avoids unsupported promises or invented scope. Treat the supplied business catalogue and business rules as authoritative. Check arithmetic independently. Flag missing work, ambiguous scope, pricing mismatches, unsupported assumptions, and unclear terms. Do not provide legal or tax certification."};
-      const payload={type:"artifact",payload:JSON.stringify(quote),context:JSON.stringify(context),settlementMinutes:10};
+      const payload={type:"artifact",payload:JSON.stringify(verifiedQuote),context:JSON.stringify(context),settlementMinutes:10};
       const upstream=await fetch(BASE+"/submit",{method:"POST",headers:{Authorization:"Bearer "+process.env.REPPO_API_KEY,"Content-Type":"application/json"},body:JSON.stringify(payload)});
       const data=await upstream.json();
       if(!upstream.ok)return res.status(upstream.status).json({error:data.message||data.error||"Reppo rejected the evaluation request.",details:data});

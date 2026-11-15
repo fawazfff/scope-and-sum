@@ -19,10 +19,10 @@ function Landing({onEnter,onHelp}){
  <a className="ss-skip" href="#ss-main">Skip to content</a>
  <header className="ss-split-nav">
   <button className="ss-split-brand" onClick={onEnter}>scope<span>&</span>sum</button>
-  <nav aria-label="Primary navigation"><a href="#ss-main">Home</a><a href="#ss-how">How it works</a><a href="#ss-business">For businesses</a><button onClick={onHelp}>Help & FAQ</button></nav>
+  <nav aria-label="Primary navigation"><a href="#ss-main">Home</a><a href="#ss-how">How it works</a><a href="#ss-business">For businesses</a><a href="https://github.com/fawazfff/scope-and-sum" target="_blank" rel="noreferrer">GitHub</a><a href="https://x.com/fawaztechyt_/status/2122084210580320681" target="_blank" rel="noreferrer">Demo</a><button onClick={onHelp}>Help & FAQ</button></nav>
   <button className="ss-primary" onClick={onEnter}>Open workspace <ArrowRight size={14}/></button>
   <button className="ss-menu-toggle" aria-label={menuOpen?"Close menu":"Open menu"} aria-expanded={menuOpen} onClick={()=>setMenuOpen(v=>!v)}>{menuOpen?<X size={19}/>:<Menu size={19}/>}</button>
-  {menuOpen&&<nav className="ss-mobile-nav"><a href="#ss-main" onClick={()=>setMenuOpen(false)}>Home</a><a href="#ss-how" onClick={()=>setMenuOpen(false)}>How it works</a><a href="#ss-business" onClick={()=>setMenuOpen(false)}>For businesses</a><button onClick={()=>{setMenuOpen(false);onHelp()}}>Help & FAQ</button></nav>}
+  {menuOpen&&<nav className="ss-mobile-nav"><a href="#ss-main" onClick={()=>setMenuOpen(false)}>Home</a><a href="#ss-how" onClick={()=>setMenuOpen(false)}>How it works</a><a href="#ss-business" onClick={()=>setMenuOpen(false)}>For businesses</a><a href="https://github.com/fawazfff/scope-and-sum" target="_blank" rel="noreferrer">GitHub</a><a href="https://x.com/fawaztechyt_/status/2122084210580320681" target="_blank" rel="noreferrer">Demo</a><button onClick={()=>{setMenuOpen(false);onHelp()}}>Help & FAQ</button></nav>}
  </header>
  <main id="ss-main" className="ss-home-editorial">
   <section className="ss-home-intro">
